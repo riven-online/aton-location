@@ -235,89 +235,72 @@ if st.session_state.current_screen != 'dashboard':
 
 st.divider()
 
-# ==========================================
-# 4. الشاشة الرئيسية
+# # ==========================================
+# 4. الشاشة الرئيسية (معدلة لاسترجاع جميع الأقسام)
 # ==========================================
 if st.session_state.current_screen == 'dashboard':
-    st.markdown("<h3 style='text-align: center; color: #d4af37; margin-bottom: 25px;'>اختر القسم المطلوب للبدء</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; color: #d4af37; margin-bottom: 30px;'>لوحة التحكم الرئيسية</h3>", unsafe_allow_html=True)
     
-    col1, col2 = st.columns(2, gap="large")
+    # توزيع الأقسام في شبكة (Grid)
+    col1, col2, col3 = st.columns(3, gap="medium")
+    col4, col5 = st.columns(2, gap="medium")
     
+    # 1. قسم الحجوزات (مربوط بالداتا)
     with col1:
         st.markdown("""
         <div class="pos-card-container">
             <div class="card-icon-circle"><i class="fa-solid fa-calendar-days"></i></div>
-            <div class="pos-card-title">حجز سيشن وتقويم المواعيد</div>
-            <div class="pos-card-desc">إضافة حجز جديد، طباعة العقد، وتتبع تقويم الأيام</div>
+            <div class="pos-card-title">حجز السيشن</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("دخول قسم الحجوزات", key="btn_nav_bookings"):
+        if st.button("دخول الحجوزات", key="nav_bookings"):
             st.session_state.current_screen = 'bookings'
             st.rerun()
 
+    # 2. قسم التذاكر (مربوط بالداتا)
     with col2:
         st.markdown("""
         <div class="pos-card-container">
             <div class="card-icon-circle"><i class="fa-solid fa-ticket"></i></div>
-            <div class="pos-card-title">قطع تذاكر الأفراد</div>
-            <div class="pos-card-desc">إصدار تذاكر الدخول الفورية وطباعة الإيصال فوراً</div>
+            <div class="pos-card-title">تذاكر الأفراد</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("دخول كاشير التذاكر", key="btn_nav_tickets"):
+        if st.button("دخول التذاكر", key="nav_tickets"):
             st.session_state.current_screen = 'tickets'
             st.rerun()
 
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    col3, col4, col5, col6 = st.columns(4, gap="medium")
-    
+    # 3. قسم الموظفين (إداري - بدون داتا)
     with col3:
         st.markdown("""
-        <div class="pos-card-container">
-            <div class="card-icon-circle"><i class="fa-solid fa-chart-pie"></i></div>
-            <div class="pos-card-title">التقارير</div>
-            <div class="pos-card-desc">الحسابات والربحية</div>
+        <div class="pos-card-container" style="border-color: #64748b;">
+            <div class="card-icon-circle" style="border-color: #64748b;"><i class="fa-solid fa-users"></i></div>
+            <div class="pos-card-title">شؤون الموظفين</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("التقارير والميزانية", key="btn_nav_reports"):
-            st.session_state.current_screen = 'reports'
-            st.rerun()
+        if st.button("دخول الموظفين", key="nav_staff"):
+            st.info("قسم إداري غير مربوط بقاعدة البيانات حالياً.")
 
+    # 4. قسم المصروفات (إداري - بدون داتا)
     with col4:
         st.markdown("""
-        <div class="pos-card-container">
-            <div class="card-icon-circle"><i class="fa-solid fa-boxes-stacked"></i></div>
-            <div class="pos-card-title">العهدة</div>
-            <div class="pos-card-desc">المعدات والأجهزة</div>
+        <div class="pos-card-container" style="border-color: #64748b;">
+            <div class="card-icon-circle" style="border-color: #64748b;"><i class="fa-solid fa-wallet"></i></div>
+            <div class="pos-card-title">المصروفات والخزينة</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("إدارة العهدة", key="btn_nav_equip"):
-            st.session_state.current_screen = 'equip'
-            st.rerun()
+        if st.button("دخول المصروفات", key="nav_expenses"):
+            st.info("قسم إداري غير مربوط بقاعدة البيانات حالياً.")
 
+    # 5. قسم التقارير (إداري - بدون داتا)
     with col5:
         st.markdown("""
-        <div class="pos-card-container">
-            <div class="card-icon-circle"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-            <div class="pos-card-title">المصروفات</div>
-            <div class="pos-card-desc">النفقات الإدارية</div>
+        <div class="pos-card-container" style="border-color: #64748b;">
+            <div class="card-icon-circle" style="border-color: #64748b;"><i class="fa-solid fa-chart-line"></i></div>
+            <div class="pos-card-title">التقارير والإحصائيات</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("تسجيل المصاريف", key="btn_nav_expenses"):
-            st.session_state.current_screen = 'expenses'
-            st.rerun()
-
-    with col6:
-        st.markdown("""
-        <div class="pos-card-container">
-            <div class="card-icon-circle"><i class="fa-solid fa-users-gear"></i></div>
-            <div class="pos-card-title">العمالة</div>
-            <div class="pos-card-desc">الحضور والسُلف</div>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("إدارة العمالة", key="btn_nav_staff"):
-            st.session_state.current_screen = 'staff'
-            st.rerun()
+        if st.button("دخول التقارير", key="nav_reports"):
+            st.info("قسم إداري غير مربوط بقاعدة البيانات حالياً.")
 
 # ==========================================
 # 5. قسم كاشير تذاكر الأفراد
