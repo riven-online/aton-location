@@ -13,6 +13,11 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# إدارة حالة التنقل عبر الـ Query Params لضمان الاستقرار التام
+query_params = st.query_params
+if 'screen' in query_params:
+    st.session_state.current_screen = query_params['screen']
+
 if 'current_screen' not in st.session_state:
     st.session_state.current_screen = 'dashboard'
 if 'last_ticket' not in st.session_state:
@@ -37,31 +42,25 @@ st.markdown("""
         background-color: #0b0d12;
     }
 
-    /* إخفاء القائمة الجانبية تماماً وأزرار التحكم بها */
-    [data-testid="stSidebar"] {
-        display: none !important;
-    }
-    [data-testid="collapsedControl"] {
+    [data-testid="stSidebar"], [data-testid="collapsedControl"] {
         display: none !important;
     }
     
-    /* تأثير النيون الذهبي الهادئ المتحرك */
     @keyframes goldNeonGlow {
         0% {
-            text-shadow: 0 0 5px rgba(212, 175, 55, 0.4), 0 0 10px rgba(212, 175, 55, 0.2);
+            text-shadow: 0 0 5px rgba(212, 175, 55, 0.4);
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(212, 175, 55, 0.15);
         }
         50% {
-            text-shadow: 0 0 15px rgba(212, 175, 55, 0.8), 0 0 25px rgba(212, 175, 55, 0.5), 0 0 35px rgba(212, 175, 55, 0.3);
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.8);
             box-shadow: 0 8px 35px rgba(212, 175, 55, 0.3), inset 0 0 25px rgba(212, 175, 55, 0.3);
         }
         100% {
-            text-shadow: 0 0 5px rgba(212, 175, 55, 0.4), 0 0 10px rgba(212, 175, 55, 0.2);
+            text-shadow: 0 0 5px rgba(212, 175, 55, 0.4);
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(212, 175, 55, 0.15);
         }
     }
 
-    /* شريط الرأس المعنون والموسع في منتصف الصفحة */
     .pos-header-center {
         background: linear-gradient(135deg, #141824 0%, #0d1017 100%);
         border: 2px solid #d4af37;
@@ -82,26 +81,31 @@ st.markdown("""
         text-align: center !important;
     }
 
-    /* تصميم الكروت لتكون بمثابة أزرار تفاعلية فاخرة بالكامل */
-    .pos-card-container {
+    /* كروت الواجهة الرئيسية المنظمة بدون تداخل */
+    .dashboard-card {
         background: linear-gradient(145deg, #161b26, #0f131c);
         border: 1px solid rgba(212, 175, 55, 0.35);
         border-radius: 16px;
-        padding: 28px 20px;
+        padding: 25px 20px;
         text-align: center;
         box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        margin-bottom: 10px;
-        min-height: 170px;
+        margin-bottom: 15px;
+        min-height: 160px;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         transition: all 0.3s ease;
     }
+    .dashboard-card:hover {
+        border-color: #d4af37;
+        transform: translateY(-4px);
+        box-shadow: 0 12px 35px rgba(212, 175, 55, 0.3);
+    }
     
     .card-icon-circle {
-        width: 50px;
-        height: 50px;
+        width: 45px;
+        height: 45px;
         background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.05));
         border: 1px solid #d4af37;
         border-radius: 50%;
@@ -112,45 +116,43 @@ st.markdown("""
         box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
     }
     .card-icon-circle i {
-        font-size: 20px;
+        font-size: 18px;
         color: #fce181;
     }
 
     .pos-card-title {
         color: #ffffff;
-        font-size: 18px;
+        font-size: 17px;
         font-weight: 800;
-        margin-bottom: 6px;
+        margin-bottom: 5px;
     }
     .pos-card-desc {
         color: #94a3b8;
-        font-size: 12px;
+        font-size: 11px;
         margin: 0;
     }
 
-    /* تخصيص أزرار الـ Streamlit لتملأ الكارت وتصبح مخفية لكن قابلة للضغط بالكامل */
+    /* تخصيص أزرار الـ Streamlit في الواجهة لتكون متناسقة تماماً ومخفية الحدود الثقيلة */
     .stButton>button {
         background: linear-gradient(145deg, #161b26, #0f131c) !important;
         border: 1px solid rgba(212, 175, 55, 0.4) !important;
         color: #ffffff !important;
         font-weight: 700 !important;
-        font-size: 16px !important;
-        border-radius: 16px !important;
-        padding: 35px 20px !important;
+        font-size: 15px !important;
+        border-radius: 14px !important;
+        padding: 20px 15px !important;
         width: 100% !important;
-        min-height: 170px !important;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        min-height: 140px !important;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.4);
         transition: all 0.3s ease !important;
     }
-    
     .stButton>button:hover {
         border-color: #d4af37 !important;
         background: linear-gradient(145deg, #1f2736, #141925) !important;
-        box-shadow: 0 12px 35px rgba(212, 175, 55, 0.3) !important;
+        box-shadow: 0 12px 30px rgba(212, 175, 55, 0.3) !important;
         transform: translateY(-3px);
     }
 
-    /* تصميم الإيصال الطباعي */
     .receipt-container {
         max-width: 340px;
         margin: auto;
@@ -188,21 +190,6 @@ st.markdown("""
         font-size: 16px;
         font-weight: 800;
     }
-
-    @media print {
-        body * {
-            visibility: hidden;
-        }
-        .receipt-container, .receipt-container * {
-            visibility: visible;
-        }
-        .receipt-container {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-        }
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -218,7 +205,7 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# 3. الهيدر العلوي الموحد مع تأثير النيون
+# 3. الهيدر العلوي الموحد
 # ==========================================
 st.markdown("""
 <div class="pos-header-center">
@@ -236,14 +223,12 @@ if st.session_state.current_screen != 'dashboard':
 st.divider()
 
 # ==========================================
-# 4. الشاشة الرئيسية (Dashboard - Interactive Cards)
+# 4. الشاشة الرئيسية (Dashboard)
 # ==========================================
 if st.session_state.current_screen == 'dashboard':
     st.markdown("<h3 style='text-align: center; color: #d4af37; margin-bottom: 25px;'>اختر القسم المطلوب للبدء</h3>", unsafe_allow_html=True)
     
-    # الصف الأول: الحجوزات والتذاكر
     col1, col2 = st.columns(2, gap="large")
-    
     with col1:
         if st.button("📅  حجز سيشن وتقويم المواعيد\nإضافة حجز جديد، طباعة العقد، وتتبع تقويم الأيام", key="btn_nav_bookings"):
             st.session_state.current_screen = 'bookings'
@@ -256,9 +241,7 @@ if st.session_state.current_screen == 'dashboard':
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # الصف الثاني: الخدمات والأقسام الفرعية (4 أعمدة)
     col3, col4, col5, col6 = st.columns(4, gap="medium")
-    
     with col3:
         if st.button("📊  التقارير\nالحسابات والربحية", key="btn_nav_reports"):
             st.session_state.current_screen = 'reports'
@@ -499,121 +482,4 @@ elif st.session_state.current_screen == 'bookings':
         try:
             res_all = supabase.table("bookings").select("*").execute().data
             if res_all:
-                st.dataframe(pd.DataFrame(res_all), use_container_width=True)
-            else:
-                st.info("لا توجد حجوزات سابقة مسجلة في قاعدة البيانات")
-        except Exception as ex:
-            st.error(f"خطأ في جلب السجل: {ex}")
-
-# ==========================================
-# 7. قسم التقارير والميزانية (مفعل ومرتبط بـ Supabase)
-# ==========================================
-elif st.session_state.current_screen == 'reports':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>التقارير والميزانية</h3>", unsafe_allow_html=True)
-    try:
-        rep_data = supabase.table("reports").select("*").execute().data
-        if rep_data:
-            st.dataframe(pd.DataFrame(rep_data), use_container_width=True)
-        else:
-            st.info("لا توجد تقارير مسجلة حالياً في قاعدة البيانات.")
-    except Exception as ex:
-        st.warning(f"ملاحظة: جدول التقارير غير متاح أو فارغ ({ex})")
-
-# ==========================================
-# 8. قسم العهدة والمعدات (مفعل ومرتبط بـ Supabase)
-# ==========================================
-elif st.session_state.current_screen == 'equip':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>إدارة العهدة والمعدات</h3>", unsafe_allow_html=True)
-    
-    with st.expobox if hasattr(st, "expobox") else st.container():
-        with st.form("add_equip_form"):
-            st.subheader("إضافة عهدة أو معدة جديدة")
-            eq_name = st.text_input("اسم المعدة / الجهاز")
-            eq_serial = st.text_input("الرقم التسلسلي (Serial Number)")
-            eq_status = st.selectbox("الحالة", ["متاحة", "قيد الاستخدام", "تحت الصيانة"])
-            eq_submit = st.form_submit_button("حفظ المعدة")
-            if eq_submit:
-                if eq_name:
-                    try:
-                        supabase.table("equip").insert({"equipment_name": eq_name, "serial_number": eq_serial, "status": eq_status}).execute()
-                        st.success("تم حفظ المعدة بنجاح!")
-                    except Exception as e:
-                        st.error(f"خطأ في الحفظ: {e}")
-                else:
-                    st.warning("يرجى إدخال اسم المعدة على الأقل.")
-
-    st.markdown("---")
-    st.subheader("سجل العهدة الحالية")
-    try:
-        eq_data = supabase.table("equip").select("*").execute().data
-        if eq_data:
-            st.dataframe(pd.DataFrame(eq_data), use_container_width=True)
-        else:
-            st.info("لا توجد معدات مسجلة في العهدة.")
-    except Exception as ex:
-        st.warning(f"ملاحظة: جدول العهدة غير متاح أو فارغ ({ex})")
-
-# ==========================================
-# 9. قسم المصروفات والنفقات (مفعل ومرتبط بـ Supabase)
-# ==========================================
-elif st.session_state.current_screen == 'expenses':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>المصروفات والنفقات</h3>", unsafe_allow_html=True)
-    
-    with st.form("add_expense_form"):
-        st.subheader("تسجيل مصروف جديد")
-        exp_desc = st.text_input("بيان المصروف (السبب)")
-        exp_amount = st.number_input("المبلغ (ج.م)", min_value=0.0, value=50.0, step=10.0)
-        exp_submit = st.form_submit_button("حفظ المصروف")
-        if exp_submit:
-            if exp_desc:
-                try:
-                    supabase.table("expenses").insert({"description": exp_desc, "amount": exp_amount}).execute()
-                    st.success("تم تسجيل المصروف بنجاح!")
-                except Exception as e:
-                    st.error(f"خطأ في حفظ المصروف: {e}")
-            else:
-                st.warning("يرجى كتابة بيان المصروف.")
-
-    st.markdown("---")
-    st.subheader("سجل المصروفات اليومية")
-    try:
-        exp_data = supabase.table("expenses").select("*").execute().data
-        if exp_data:
-            st.dataframe(pd.DataFrame(exp_data), use_container_width=True)
-        else:
-            st.info("لا توجد مصروفات مسجلة حتى الآن.")
-    except Exception as ex:
-        st.warning(f"ملاحظة: جدول المصروفات غير متاح أو فارغ ({ex})")
-
-# ==========================================
-# 10. قسم العمالة والحضور والسُلف (مفعل ومرتبط بـ Supabase)
-# ==========================================
-elif st.session_state.current_screen == 'staff':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>العمالة والحضور والسُلف</h3>", unsafe_allow_html=True)
-    
-    with st.form("add_staff_form"):
-        st.subheader("تسجيل موظف أو سُلفة جديدة")
-        st_name = st.text_input("اسم الموظف")
-        st_action = st.selectbox("نوع الحركة", ["حضور", "انصراف", "طلب سُلفة"])
-        st_amount = st.number_input("قيمة السُلفة (إن وجدت)", min_value=0.0, value=0.0, step=50.0)
-        st_submit = st.form_submit_button("حفظ حركة الموظف")
-        if st_submit:
-            if st_name:
-                try:
-                    supabase.table("staff").insert({"staff_name": st_name, "action": st_action, "amount": st_amount}).execute()
-                    st.success("تم تسجيل الحركة بنجاح!")
-                except Exception as e:
-                    st.error(f"خطأ في الحفظ: {e}")
-            else:
-                st.warning("يرجى إدخال اسم الموظف.")
-
-    st.markdown("---")
-    st.subheader("سجل العمالة والحضور")
-    try:
-        st_data = supabase.table("staff").select("*").execute().data
-        if st_data:
-            st.dataframe(pd.DataFrame(st_data), use_container_width=True)
-        else:
-            st.info("لا توجد بيانات مسجلة للعمالة.")
-    except Exception as ex:
-        st.warning(f"ملاحظة: جدول العمالة غير متاح أو فارغ ({ex})")
+                st.dataframe(pd.DataFrame(res_all), use_container
