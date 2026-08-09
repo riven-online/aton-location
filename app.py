@@ -1,20 +1,3 @@
-import streamlit as st
-import pandas as pd
-from supabase import create_client, Client
-from datetime import datetime, time, date
-
-# ==========================================
-# 0. بطاقة الذاكرة الدائمة (استخدمها عند فتح شات جديد لاحقاً)
-# ==========================================
-"""
-مشروع: آتون لوكيشن | Aton Location POS
-جداول Supabase المستخدمة: tickets, bookings, equipment, expenses, staff
-الحالة العامة (Session States): current_screen, last_ticket, last_booking
-"""
-
-# ==========================================
-# 1. تهيئة الصفحة والأنماط البصرية الحديثة
-# ==========================================
 st.set_page_config(
     page_title="آتون لوكيشن | Aton Location POS",
     page_icon="🎬",
