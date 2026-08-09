@@ -13,11 +13,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# إدارة حالة التنقل عبر الـ Query Params لضمان الاستقرار التام
-query_params = st.query_params
-if 'screen' in query_params:
-    st.session_state.current_screen = query_params['screen']
-
 if 'current_screen' not in st.session_state:
     st.session_state.current_screen = 'dashboard'
 if 'last_ticket' not in st.session_state:
@@ -81,58 +76,6 @@ st.markdown("""
         text-align: center !important;
     }
 
-    /* كروت الواجهة الرئيسية المنظمة بدون تداخل */
-    .dashboard-card {
-        background: linear-gradient(145deg, #161b26, #0f131c);
-        border: 1px solid rgba(212, 175, 55, 0.35);
-        border-radius: 16px;
-        padding: 25px 20px;
-        text-align: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        margin-bottom: 15px;
-        min-height: 160px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        transition: all 0.3s ease;
-    }
-    .dashboard-card:hover {
-        border-color: #d4af37;
-        transform: translateY(-4px);
-        box-shadow: 0 12px 35px rgba(212, 175, 55, 0.3);
-    }
-    
-    .card-icon-circle {
-        width: 45px;
-        height: 45px;
-        background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.05));
-        border: 1px solid #d4af37;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 12px;
-        box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
-    }
-    .card-icon-circle i {
-        font-size: 18px;
-        color: #fce181;
-    }
-
-    .pos-card-title {
-        color: #ffffff;
-        font-size: 17px;
-        font-weight: 800;
-        margin-bottom: 5px;
-    }
-    .pos-card-desc {
-        color: #94a3b8;
-        font-size: 11px;
-        margin: 0;
-    }
-
-    /* تخصيص أزرار الـ Streamlit في الواجهة لتكون متناسقة تماماً ومخفية الحدود الثقيلة */
     .stButton>button {
         background: linear-gradient(145deg, #161b26, #0f131c) !important;
         border: 1px solid rgba(212, 175, 55, 0.4) !important;
@@ -482,4 +425,40 @@ elif st.session_state.current_screen == 'bookings':
         try:
             res_all = supabase.table("bookings").select("*").execute().data
             if res_all:
-                st.dataframe(pd.DataFrame(res_all), use_container
+                st.dataframe(pd.DataFrame(res_all), use_container_width=True)
+            else:
+                st.info("لا توجد حجوزات سابقة مسجلة في قاعدة البيانات")
+        except Exception as ex:
+            st.error(f"خطأ في جلب السجل: {ex}")
+
+# ==========================================
+# 7. قسم التقارير والميزانية
+# ==========================================
+elif st.session_state.current_screen == 'reports':
+    st.markdown("<h3 style='color: #d4af37; text-align: center;'>التقارير والميزانية</h3>", unsafe_allow_html=True)
+    try:
+        rep_data = supabase.table("reports").select("*").execute().data
+        if rep_data:
+            st.dataframe(pd.DataFrame(rep_data), use_container_width=True)
+        else:
+            st.info("لا توجد تقارير مسجلة حالياً في قاعدة البيانات.")
+    except Exception as ex:
+        st.warning(f"ملاحظة: جدول التقارير غير متاح أو فارغ ({ex})")
+
+# ==========================================
+# 8. قسم العهدة والمعدات
+# ==========================================
+elif st.session_state.current_screen == 'equip':
+    st.markdown("<h3 style='color: #d4af37; text-align: center;'>إدارة العهدة والمعدات</h3>", unsafe_allow_html=True)
+    
+    with st.form("add_equip_form"):
+        st.subheader("إضافة عهدة أو معدة جديدة")
+        eq_name = st.text_input("اسم المعدة / الجهاز")
+        eq_serial = st.text_input("الرقم التسلسلي (Serial Number)")
+        eq_status = st.selectbox("الحالة", ["متاحة", "قيد الاستخدام", "تحت الصيانة"])
+        eq_submit = st.form_submit_button("حفظ المعدة")
+        if eq_submit:
+            if eq_name:
+                try:
+                    supabase.table("equip").insert({"equipment_name": eq_name, "serial_number": eq_serial, "status": eq_status}).execute()
+            
