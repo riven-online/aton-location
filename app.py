@@ -235,41 +235,46 @@ if st.session_state.current_screen != 'dashboard':
 
 st.divider()
 
-# # ==========================================
-# 4. الشاشة الرئيسية (معدلة لاسترجاع جميع الأقسام)
-# ==========================================
+# # =# ==========================================================
+# الشاشة الرئيسية - دمج الأنظمة المربوطة والمستقلة
+# ==========================================================
 if st.session_state.current_screen == 'dashboard':
     st.markdown("<h3 style='text-align: center; color: #d4af37; margin-bottom: 30px;'>لوحة التحكم الرئيسية</h3>", unsafe_allow_html=True)
     
-    # توزيع الأقسام في شبكة (Grid)
-    col1, col2, col3 = st.columns(3, gap="medium")
-    col4, col5 = st.columns(2, gap="medium")
+    # الصف الأول (الحجوزات والتذاكر - ربط مباشر بسوبابيز)
+    col1, col2 = st.columns(2, gap="medium")
     
-    # 1. قسم الحجوزات (مربوط بالداتا)
     with col1:
         st.markdown("""
         <div class="pos-card-container">
             <div class="card-icon-circle"><i class="fa-solid fa-calendar-days"></i></div>
             <div class="pos-card-title">حجز السيشن</div>
+            <div class="pos-card-desc">نظام الحجوزات المربوط بسوبابيز</div>
         </div>
         """, unsafe_allow_html=True)
         if st.button("دخول الحجوزات", key="nav_bookings"):
             st.session_state.current_screen = 'bookings'
             st.rerun()
 
-    # 2. قسم التذاكر (مربوط بالداتا)
     with col2:
         st.markdown("""
         <div class="pos-card-container">
             <div class="card-icon-circle"><i class="fa-solid fa-ticket"></i></div>
             <div class="pos-card-title">تذاكر الأفراد</div>
+            <div class="pos-card-desc">نظام الكاشير المربوط بسوبابيز</div>
         </div>
         """, unsafe_allow_html=True)
         if st.button("دخول التذاكر", key="nav_tickets"):
             st.session_state.current_screen = 'tickets'
             st.rerun()
 
-    # 3. قسم الموظفين (إداري - بدون داتا)
+    st.markdown("<br><hr style='border: 1px solid #334155;'><br>", unsafe_allow_html=True)
+    
+    # الصف الثاني (الأقسام الإدارية - غير مرتبطة نهائياً بالسيرفر)
+    st.markdown("<h4 style='color: #64748b; text-align: center; margin-bottom: 20px;'>الأقسام الإدارية (محلي / مستقل)</h4>", unsafe_allow_html=True)
+    
+    col3, col4, col5 = st.columns(3, gap="medium")
+    
     with col3:
         st.markdown("""
         <div class="pos-card-container" style="border-color: #64748b;">
@@ -277,10 +282,11 @@ if st.session_state.current_screen == 'dashboard':
             <div class="pos-card-title">شؤون الموظفين</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("دخول الموظفين", key="nav_staff"):
-            st.info("قسم إداري غير مربوط بقاعدة البيانات حالياً.")
+        # هذا الزر يعمل محلياً ولا يستدعي أي كود سوبابيز
+        if st.button("شؤون الموظفين", key="nav_staff"):
+            st.session_state.current_screen = 'staff_admin'
+            st.rerun()
 
-    # 4. قسم المصروفات (إداري - بدون داتا)
     with col4:
         st.markdown("""
         <div class="pos-card-container" style="border-color: #64748b;">
@@ -288,10 +294,10 @@ if st.session_state.current_screen == 'dashboard':
             <div class="pos-card-title">المصروفات والخزينة</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("دخول المصروفات", key="nav_expenses"):
-            st.info("قسم إداري غير مربوط بقاعدة البيانات حالياً.")
+        if st.button("المصروفات", key="nav_expenses"):
+            st.session_state.current_screen = 'expenses_admin'
+            st.rerun()
 
-    # 5. قسم التقارير (إداري - بدون داتا)
     with col5:
         st.markdown("""
         <div class="pos-card-container" style="border-color: #64748b;">
@@ -299,10 +305,10 @@ if st.session_state.current_screen == 'dashboard':
             <div class="pos-card-title">التقارير والإحصائيات</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("دخول التقارير", key="nav_reports"):
-            st.info("قسم إداري غير مربوط بقاعدة البيانات حالياً.")
-
-# ==========================================
+        if st.button("التقارير", key="nav_reports"):
+            st.session_state.current_screen = 'reports_admin'
+            st.rerun()
+ ==========================================
 # 5. قسم كاشير تذاكر الأفراد
 # ==========================================
 elif st.session_state.current_screen == 'tickets':
