@@ -65,16 +65,16 @@ st.markdown("""
     .pos-header-center {
         background: linear-gradient(135deg, #141824 0%, #0d1017 100%);
         border: 2px solid #d4af37;
-        padding: 18px;
+        padding: 16px;
         border-radius: 16px;
-        margin: 5px auto 15px auto;
+        margin: 0px auto 10px auto;
         text-align: center !important;
         width: 100%;
         max-width: 800px;
         animation: goldNeonGlow 3s infinite ease-in-out;
     }
     .pos-title-center {
-        font-size: 28px;
+        font-size: 26px;
         font-weight: 900;
         color: #fce181;
         letter-spacing: 2px;
@@ -82,13 +82,12 @@ st.markdown("""
         text-align: center !important;
     }
 
-    /* حاوية الكارت المتكاملة لتغطية الكارت وزر الاستريمليت الشفاف تماماً فوقه */
-    .card-box-container {
-        position: relative;
+    /* هيكل الكارت الاحترافي (شكل بصري فقط بدون تداخل) */
+    .card-visual-box {
         background: linear-gradient(145deg, #161b26, #0f131c);
         border: 1px solid rgba(212, 175, 55, 0.35);
         border-radius: 16px;
-        padding: 24px 15px;
+        padding: 20px 15px;
         text-align: center;
         box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         display: flex;
@@ -96,69 +95,63 @@ st.markdown("""
         justify-content: center;
         align-items: center;
         transition: all 0.3s ease;
+        margin-bottom: 0px;
     }
-    .card-box-container:hover {
+    .card-visual-box:hover {
         border-color: #d4af37;
         background: linear-gradient(145deg, #1f2736, #141925);
         box-shadow: 0 12px 35px rgba(212, 175, 55, 0.3);
-        transform: translateY(-4px);
+        transform: translateY(-3px);
     }
     
     .card-icon-container {
-        width: 55px;
-        height: 55px;
+        width: 50px;
+        height: 50px;
         background: linear-gradient(135deg, rgba(212, 175, 55, 0.25), rgba(212, 175, 55, 0.05));
         border: 1px solid #d4af37;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
         box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
     }
     .card-icon-container i {
-        font-size: 22px;
+        font-size: 20px;
         color: #fce181;
     }
     .card-title-text {
         color: #ffffff;
-        font-size: 17px;
+        font-size: 16px;
         font-weight: 800;
-        margin-bottom: 6px;
+        margin-bottom: 5px;
     }
     .card-desc-text {
         color: #94a3b8;
         font-size: 11px;
         margin: 0;
-        line-height: 1.4;
+        line-height: 1.3;
     }
 
-    /* طبقة زر الاستريمليت لتغطية مساحة الكارت بالكامل وجعله قابلاً للنقر في أي مكان داخل الكارت */
-    div.stButton {
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
+    /* تنسيق أزرار الاستريمليت المباشرة لتكون واضحة وقابلة للضغط بنسبة 100% */
+    .stButton>button {
+        background: linear-gradient(145deg, #161b26, #0f131c) !important;
+        border: 1px solid rgba(212, 175, 55, 0.4) !important;
+        color: #ffffff !important;
         width: 100% !important;
-        height: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        z-index: 10 !important;
-    }
-    div.stButton > button {
-        background-color: transparent !important;
-        border: none !important;
-        color: transparent !important;
-        width: 100% !important;
-        height: 100% !important;
-        border-radius: 16px !important;
-        box-shadow: none !important;
+        border-radius: 14px !important;
+        font-family: 'Cairo', sans-serif !important;
+        font-weight: 700 !important;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.4) !important;
         cursor: pointer !important;
+        transition: all 0.3s ease !important;
     }
-    div.stButton > button:hover {
-        background-color: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        transform: none !important;
+    .stButton>button:hover {
+        background: linear-gradient(145deg, #1f2736, #141925) !important;
+        border-color: #d4af37 !important;
+        color: #fce181 !important;
+        box-shadow: 0 10px 30px rgba(212, 175, 55, 0.25) !important;
+        transform: translateY(-3px) !important;
     }
 
     /* تصميم الإيصال الطباعي */
@@ -244,91 +237,49 @@ if st.session_state.current_screen != 'dashboard':
             st.session_state.current_screen = 'dashboard'
             st.rerun()
 
-st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='margin-bottom: 5px;'></div>", unsafe_allow_html=True)
 
 # ==========================================
-# 4. الشاشة الرئيسية (Dashboard - Modern Interactive Cards)
+# 4. الشاشة الرئيسية (Dashboard - Functional Streamlit Buttons with Exact Theme)
 # ==========================================
 if st.session_state.current_screen == 'dashboard':
-    st.markdown("<h4 style='text-align: center; color: #d4af37; margin-bottom: 20px; font-weight: 700;'>اختر القسم المطلوب للبدء</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='text-align: center; color: #d4af37; margin-bottom: 15px; font-weight: 700;'>اختر القسم المطلوب للبدء</h4>", unsafe_allow_html=True)
     
-    # الصف الأول: الحجوزات والتذاكر
+    # الصف الأول: التذاكر والحجوزات (أعمدة عريضة)
     col1, col2 = st.columns(2, gap="medium")
     
     with col1:
-        st.markdown("""
-        <div class="card-box-container" style="min-height: 160px;">
-            <div class="card-icon-container"><i class="fa-solid fa-ticket"></i></div>
-            <div class="card-title-text">قطع تذاكر الأفراد</div>
-            <div class="card-desc-text">إصدار تذاكر الدخول الفورية وطباعة الإيصالات المالية فوراً</div>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("تذاكر", key="btn_nav_tickets"):
+        if st.button("قطع تذاكر الأفراد\n\nإصدار تذاكر الدخول الفورية وطباعة الإيصالات المالية فوراً", key="btn_nav_tickets"):
             st.session_state.current_screen = 'tickets'
             st.rerun()
 
     with col2:
-        st.markdown("""
-        <div class="card-box-container" style="min-height: 160px;">
-            <div class="card-icon-container"><i class="fa-solid fa-calendar-days"></i></div>
-            <div class="card-title-text">حجز سيشن وتقويم المواعيد</div>
-            <div class="card-desc-text">إضافة حجز جديد، طباعة العقد المالي، وتتبع جدول المواعيد</div>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("حجوزات", key="btn_nav_bookings"):
+        if st.button("حجز سيشن وتقويم المواعيد\n\nإضافة حجز جديد، طباعة العقد المالي، وتتبع جدول المواعيد", key="btn_nav_bookings"):
             st.session_state.current_screen = 'bookings'
             st.rerun()
 
-    st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
 
-    # الصف الثاني: الخدمات والأقسام الفرعية (4 أعمدة متناسقة ومضمومة للأعلى لتفادي النزول لأسفل الصفحة)
+    # الصف الثاني: الأقسام الفرعية (4 أعمدة مضمومة للأعلى ومنسقة بذكاء)
     col3, col4, col5, col6 = st.columns(4, gap="small")
     
     with col3:
-        st.markdown("""
-        <div class="card-box-container" style="min-height: 140px;">
-            <div class="card-icon-container" style="width: 45px; height: 45px; margin-bottom: 8px;"><i class="fa-solid fa-users-gear" style="font-size: 18px;"></i></div>
-            <div class="card-title-text" style="font-size: 15px;">العمالة</div>
-            <div class="card-desc-text">الحضور والسُلف</div>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("العمالة", key="btn_nav_staff"):
+        if st.button("العمالة\n\nالحضور والسُلف", key="btn_nav_staff"):
             st.session_state.current_screen = 'staff'
             st.rerun()
 
     with col4:
-        st.markdown("""
-        <div class="card-box-container" style="min-height: 140px;">
-            <div class="card-icon-container" style="width: 45px; height: 45px; margin-bottom: 8px;"><i class="fa-solid fa-file-invoice-dollar" style="font-size: 18px;"></i></div>
-            <div class="card-title-text" style="font-size: 15px;">المصروفات</div>
-            <div class="card-desc-text">النفقات الإدارية</div>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("المصروفات", key="btn_nav_expenses"):
+        if st.button("المصروفات\n\nالنفقات الإدارية", key="btn_nav_expenses"):
             st.session_state.current_screen = 'expenses'
             st.rerun()
 
     with col5:
-        st.markdown("""
-        <div class="card-box-container" style="min-height: 140px;">
-            <div class="card-icon-container" style="width: 45px; height: 45px; margin-bottom: 8px;"><i class="fa-solid fa-boxes-stacked" style="font-size: 18px;"></i></div>
-            <div class="card-title-text" style="font-size: 15px;">العهدة</div>
-            <div class="card-desc-text">المعدات والأجهزة</div>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("العهدة", key="btn_nav_equip"):
+        if st.button("العهدة\n\nالمعدات والأجهزة", key="btn_nav_equip"):
             st.session_state.current_screen = 'equip'
             st.rerun()
 
     with col6:
-        st.markdown("""
-        <div class="card-box-container" style="min-height: 140px;">
-            <div class="card-icon-container" style="width: 45px; height: 45px; margin-bottom: 8px;"><i class="fa-solid fa-chart-pie" style="font-size: 18px;"></i></div>
-            <div class="card-title-text" style="font-size: 15px;">التقارير</div>
-            <div class="card-desc-text">الحسابات والربحية</div>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("التقارير", key="btn_nav_reports"):
+        if st.button("التقارير\n\nالحسابات والربحية", key="btn_nav_reports"):
             st.session_state.current_screen = 'reports'
             st.rerun()
 
