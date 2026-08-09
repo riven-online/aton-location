@@ -4,7 +4,7 @@ from supabase import create_client, Client
 from datetime import datetime, time, date
 
 # ==========================================
-# 1. تهيئة الصفحة والأنماط البصرية الحديثة (Modern POS UI)
+# 1. تهيئة الصفحة والأنماط البصرية الحديثة
 # ==========================================
 st.set_page_config(
     page_title="آتون لوكيشن | Aton Location POS",
@@ -23,6 +23,7 @@ if 'last_booking' not in st.session_state:
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
+    @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 
     html, body, [class*="css"] {
         font-family: 'Cairo', sans-serif !important;
@@ -48,12 +49,15 @@ st.markdown("""
     @keyframes goldNeonGlow {
         0% {
             text-shadow: 0 0 5px rgba(212, 175, 55, 0.4), 0 0 10px rgba(212, 175, 55, 0.2);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(212, 175, 55, 0.15);
         }
         50% {
             text-shadow: 0 0 15px rgba(212, 175, 55, 0.8), 0 0 25px rgba(212, 175, 55, 0.5), 0 0 35px rgba(212, 175, 55, 0.3);
+            box-shadow: 0 8px 35px rgba(212, 175, 55, 0.3), inset 0 0 25px rgba(212, 175, 55, 0.3);
         }
         100% {
             text-shadow: 0 0 5px rgba(212, 175, 55, 0.4), 0 0 10px rgba(212, 175, 55, 0.2);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(212, 175, 55, 0.15);
         }
     }
 
@@ -67,7 +71,7 @@ st.markdown("""
         text-align: center !important;
         width: 100%;
         max-width: 800px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(212, 175, 55, 0.15);
+        animation: goldNeonGlow 3s infinite ease-in-out;
     }
     .pos-title-center {
         font-size: 32px;
@@ -76,37 +80,60 @@ st.markdown("""
         letter-spacing: 2px;
         margin: 0;
         text-align: center !important;
-        animation: goldNeonGlow 3s infinite ease-in-out;
     }
 
-    /* كروت الأقسام الرئيسية المتناسقة */
+    /* تصميم الكروت والأيقونات المضيئة الفاخرة */
     .pos-card-container {
         background: linear-gradient(145deg, #161b26, #0f131c);
-        border: 1px solid rgba(212, 175, 55, 0.3);
+        border: 1px solid rgba(212, 175, 55, 0.35);
         border-radius: 16px;
-        padding: 25px 20px;
+        padding: 24px 20px 20px 20px;
         text-align: center;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         margin-bottom: 12px;
-        min-height: 140px;
+        min-height: 160px;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
+        transition: all 0.3s ease;
     }
+    .pos-card-container:hover {
+        border-color: #d4af37;
+        box-shadow: 0 12px 35px rgba(212, 175, 55, 0.2);
+        transform: translateY(-3px);
+    }
+    
+    .card-icon-circle {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.05));
+        border: 1px solid #d4af37;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 12px;
+        box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+    }
+    .card-icon-circle i {
+        font-size: 20px;
+        color: #fce181;
+    }
+
     .pos-card-title {
         color: #ffffff;
-        font-size: 20px;
+        font-size: 18px;
         font-weight: 800;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
     }
     .pos-card-desc {
         color: #94a3b8;
-        font-size: 13px;
+        font-size: 12px;
         margin: 0;
     }
 
-    /* توحيد وتوسيط أزرار الـ Streamlit تحت الكروت بدقة مئوية كاملة */
+    /* توسيط أزرار الـ Streamlit باحترافية تحت كل كارت */
     .stButton {
         display: flex;
         justify-content: center;
@@ -201,7 +228,7 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# 3. الهيدر العلوي الموحد مع تأثير النيون
+# 3. الهيدر العلوي الموحد مع تأثير النيون الذهبي المتبادل
 # ==========================================
 st.markdown("""
 <div class="pos-header-center">
@@ -219,17 +246,18 @@ if st.session_state.current_screen != 'dashboard':
 st.divider()
 
 # ==========================================
-# 4. الشاشة الرئيسية (Dashboard - Grid Layout with Centered Buttons)
+# 4. الشاشة الرئيسية (Dashboard - Grid Layout with Gorgeous Icons)
 # ==========================================
 if st.session_state.current_screen == 'dashboard':
     st.markdown("<h3 style='text-align: center; color: #d4af37; margin-bottom: 25px;'>اختر القسم المطلوب للبدء</h3>", unsafe_allow_html=True)
     
-    # الصف الأول: الحجوزات والتذاكر (كل كارت وتحته زره الخاص في نفس العمود تماماً)
+    # الصف الأول: الحجوزات والتذاكر
     col1, col2 = st.columns(2, gap="large")
     
     with col1:
         st.markdown("""
         <div class="pos-card-container">
+            <div class="card-icon-circle"><i class="fa-solid fa-calendar-days"></i></div>
             <div class="pos-card-title">حجز سيشن وتقويم المواعيد</div>
             <div class="pos-card-desc">إضافة حجز جديد، طباعة العقد، وتتبع تقويم الأيام</div>
         </div>
@@ -241,6 +269,7 @@ if st.session_state.current_screen == 'dashboard':
     with col2:
         st.markdown("""
         <div class="pos-card-container">
+            <div class="card-icon-circle"><i class="fa-solid fa-ticket"></i></div>
             <div class="pos-card-title">قطع تذاكر الأفراد</div>
             <div class="pos-card-desc">إصدار تذاكر الدخول الفورية وطباعة الإيصال فوراً</div>
         </div>
@@ -251,12 +280,13 @@ if st.session_state.current_screen == 'dashboard':
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # الصف الثاني: الخدمات والأقسام الفرعية (4 أعمدة، كل كارت تحته زره المتمحور تماماً)
+    # الصف الثاني: الخدمات والأقسام الفرعية (4 أعمدة)
     col3, col4, col5, col6 = st.columns(4, gap="medium")
     
     with col3:
         st.markdown("""
         <div class="pos-card-container">
+            <div class="card-icon-circle"><i class="fa-solid fa-chart-pie"></i></div>
             <div class="pos-card-title">التقارير</div>
             <div class="pos-card-desc">الحسابات والربحية</div>
         </div>
@@ -268,6 +298,7 @@ if st.session_state.current_screen == 'dashboard':
     with col4:
         st.markdown("""
         <div class="pos-card-container">
+            <div class="card-icon-circle"><i class="fa-solid fa-boxes-stacked"></i></div>
             <div class="pos-card-title">العهدة</div>
             <div class="pos-card-desc">المعدات والأجهزة</div>
         </div>
@@ -279,6 +310,7 @@ if st.session_state.current_screen == 'dashboard':
     with col5:
         st.markdown("""
         <div class="pos-card-container">
+            <div class="card-icon-circle"><i class="fa-solid fa-file-invoice-dollar"></i></div>
             <div class="pos-card-title">المصروفات</div>
             <div class="pos-card-desc">النفقات الإدارية</div>
         </div>
@@ -290,6 +322,7 @@ if st.session_state.current_screen == 'dashboard':
     with col6:
         st.markdown("""
         <div class="pos-card-container">
+            <div class="card-icon-circle"><i class="fa-solid fa-users-gear"></i></div>
             <div class="pos-card-title">العمالة</div>
             <div class="pos-card-desc">الحضور والسُلف</div>
         </div>
@@ -475,68 +508,4 @@ elif st.session_state.current_screen == 'bookings':
                     <div class="receipt-title">آتون لوكيشن</div>
                     <div style="font-size: 11px; font-weight: bold; color: #333; margin-top:5px;">إيصال تأكيد موعد وحجز</div>
                 </div>
-                <div class="receipt-row"><span>العميل:</span> <strong>{b_curr.get('client_name')}</strong></div>
-                <div class="receipt-row"><span>الهاتف:</span> <strong>{b_curr.get('phone')}</strong></div>
-                <div class="receipt-row"><span>الباقة:</span> <strong>{b_curr.get('session_type')}</strong></div>
-                <div class="receipt-row"><span>اللوكيشن:</span> <strong>{b_curr.get('location_room')}</strong></div>
-                <div class="receipt-row"><span>التاريخ:</span> <strong>{b_curr.get('session_date')}</strong></div>
-                <div class="receipt-row"><span>الموعد:</span> <strong>من {str(b_curr.get('start_time'))[:5]} إلى {str(b_curr.get('end_time'))[:5]}</strong></div>
-                <hr style="border:0.5px dashed #444; margin:8px 0;">
-                <div class="receipt-row"><span>الإجمالي:</span> <strong>{float(b_curr.get('total_agreed', 0)):,.0f} ج.م</strong></div>
-                <div class="receipt-row"><span>العربون:</span> <strong style="color:green;">{float(b_curr.get('paid_amount', 0)):,.0f} ج.م</strong></div>
-                <div class="receipt-total receipt-row">
-                    <span>المتبقي عند الحضور:</span>
-                    <span style="color:red;">{rem_calc:,.0f} ج.م</span>
-                </div>
-            </div>
-            """
-            st.markdown(receipt_html, unsafe_allow_html=True)
-
-    with tab_cal:
-        st.subheader("تقويم استعلام المواعيد اليومية")
-        search_date = st.date_input("اختر اليوم للتحقق", value=date.today(), key="cal_search_date")
-        try:
-            all_b = supabase.table("bookings").select("*").execute().data
-            day_bookings = []
-            if all_b:
-                for b in all_b:
-                    b_d = str(b.get('session_date') or b.get('booking_date') or b.get('date') or '').split('T')[0]
-                    if b_d == str(search_date):
-                        day_bookings.append(b)
-
-            if day_bookings:
-                st.success(f"تم العثور على {len(day_bookings)} حجز في هذا التاريخ")
-                df_day = pd.DataFrame(day_bookings)
-                st.dataframe(df_day, use_container_width=True)
-            else:
-                st.info("لا توجد حجوزات مسجلة في هذا اليوم")
-        except Exception as ex:
-            st.warning(f"تعذر جلب الحجوزات: {ex}")
-
-    with tab_list:
-        st.subheader("سجل كافة الحجوزات المسجلة")
-        try:
-            res_all = supabase.table("bookings").select("*").execute().data
-            if res_all:
-                st.dataframe(pd.DataFrame(res_all), use_container_width=True)
-            else:
-                st.info("لا توجد حجوزات سابقة مسجلة في قاعدة البيانات")
-        except Exception as ex:
-            st.error(f"خطأ في جلب السجل: {ex}")
-
-# شاشات الأقسام الأخرى الباقية (Reports, Equip, Expenses, Staff)
-elif st.session_state.current_screen == 'reports':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>التقارير والميزانية</h3>", unsafe_allow_html=True)
-    st.info("قسم التقارير المالية والربحية قيد العرض التفاعلي...")
-
-elif st.session_state.current_screen == 'equip':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>إدارة العهدة والمعدات</h3>", unsafe_allow_html=True)
-    st.info("قسم تسجيل وتسليم المعدات والعهدة...")
-
-elif st.session_state.current_screen == 'expenses':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>المصروفات والنفقات</h3>", unsafe_allow_html=True)
-    st.info("قسم تسجيل النفقات والمصروفات الإدارية اليومية...")
-
-elif st.session_state.current_screen == 'staff':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>العمالة والحضور والسُلف</h3>", unsafe_allow_html=True)
-    st.info("قسم تتبع الحضور، الانصراف، وسُلف الموظفين...")
+                <div class="receipt-row"><span>العميل:</span> <str
