@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
-import httpx
 from supabase import create_client, Client
+from supabase.lib.client_options import ClientOptions
 
 # --- ضبط إعدادات الصفحة ---
 st.set_page_config(
@@ -10,24 +10,20 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- الاتصال بقاعدة البيانات مع حل مشكلة التشفير (UnicodeEncodeError) ---
+# --- الاتصال بقاعدة البيانات ---
 try:
     url = str(st.secrets["SUPABASE_URL"]).strip()
     key = str(st.secrets["SUPABASE_KEY"]).strip()
 
-    # إنشاء httpx client مخصص ينظم الـ Headers بصيغة ASCII نقية
-    custom_client = httpx.Client(
+    # استخدام ClientOptions كـ Object بدلاً من dict لتفادي الخطأ
+    options = ClientOptions(
         headers={
             "apiKey": key,
             "Authorization": f"Bearer {key}"
         }
     )
 
-    supabase: Client = create_client(
-        url, 
-        key, 
-        options={"httpx_client": custom_client}
-    )
+    supabase: Client = create_client(url, key, options=options)
 except Exception as e:
     st.error(f"خطأ في الاتصال بقاعدة البيانات: {e}")
     st.stop()
