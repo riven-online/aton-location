@@ -65,16 +65,16 @@ st.markdown("""
     .pos-header-center {
         background: linear-gradient(135deg, #141824 0%, #0d1017 100%);
         border: 2px solid #d4af37;
-        padding: 22px;
+        padding: 18px;
         border-radius: 16px;
-        margin: 10px auto 30px auto;
+        margin: 5px auto 15px auto;
         text-align: center !important;
         width: 100%;
         max-width: 800px;
         animation: goldNeonGlow 3s infinite ease-in-out;
     }
     .pos-title-center {
-        font-size: 32px;
+        font-size: 28px;
         font-weight: 900;
         color: #fce181;
         letter-spacing: 2px;
@@ -82,70 +82,79 @@ st.markdown("""
         text-align: center !important;
     }
 
-    /* كروت الواجهة الرئيسية الفاخرة باستخدام FontAwesome بدلاً من الإيموجي */
-    .dashboard-card-wrapper {
+    /* حاوية الكارت المتكاملة لتغطية الكارت وزر الاستريمليت الشفاف تماماً فوقه */
+    .card-box-container {
+        position: relative;
         background: linear-gradient(145deg, #161b26, #0f131c);
         border: 1px solid rgba(212, 175, 55, 0.35);
         border-radius: 16px;
-        padding: 30px 20px;
+        padding: 24px 15px;
         text-align: center;
         box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        margin-bottom: 20px;
-        min-height: 200px;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         transition: all 0.3s ease;
     }
-    .dashboard-card-wrapper:hover {
+    .card-box-container:hover {
         border-color: #d4af37;
         background: linear-gradient(145deg, #1f2736, #141925);
         box-shadow: 0 12px 35px rgba(212, 175, 55, 0.3);
         transform: translateY(-4px);
     }
+    
     .card-icon-container {
-        width: 60px;
-        height: 60px;
+        width: 55px;
+        height: 55px;
         background: linear-gradient(135deg, rgba(212, 175, 55, 0.25), rgba(212, 175, 55, 0.05));
         border: 1px solid #d4af37;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 15px;
+        margin-bottom: 12px;
         box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
     }
     .card-icon-container i {
-        font-size: 24px;
+        font-size: 22px;
         color: #fce181;
     }
     .card-title-text {
         color: #ffffff;
-        font-size: 18px;
+        font-size: 17px;
         font-weight: 800;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
     }
     .card-desc-text {
         color: #94a3b8;
-        font-size: 12px;
+        font-size: 11px;
         margin: 0;
-        line-height: 1.5;
+        line-height: 1.4;
     }
 
-    /* تخصيص أزرار الـ Streamlit لتكون شفافة وفوق الكارت تماماً لتفعيل الضغط */
-    .stButton>button {
+    /* طبقة زر الاستريمليت لتغطية مساحة الكارت بالكامل وجعله قابلاً للنقر في أي مكان داخل الكارت */
+    div.stButton {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        z-index: 10 !important;
+    }
+    div.stButton > button {
         background-color: transparent !important;
         border: none !important;
         color: transparent !important;
         width: 100% !important;
         height: 100% !important;
-        min-height: 200px !important;
         border-radius: 16px !important;
         box-shadow: none !important;
-        cursor: pointer;
+        cursor: pointer !important;
     }
-    .stButton>button:hover {
+    div.stButton > button:hover {
         background-color: transparent !important;
         border: none !important;
         box-shadow: none !important;
@@ -235,75 +244,63 @@ if st.session_state.current_screen != 'dashboard':
             st.session_state.current_screen = 'dashboard'
             st.rerun()
 
-st.divider()
+st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
 
 # ==========================================
 # 4. الشاشة الرئيسية (Dashboard - Modern Interactive Cards)
 # ==========================================
 if st.session_state.current_screen == 'dashboard':
-    st.markdown("<h3 style='text-align: center; color: #d4af37; margin-bottom: 30px;'>اختر القسم المطلوب للبدء</h3>", unsafe_allow_html=True)
+    st.markdown("<h4 style='text-align: center; color: #d4af37; margin-bottom: 20px; font-weight: 700;'>اختر القسم المطلوب للبدء</h4>", unsafe_allow_html=True)
     
-    # الصف الأول: الحجوزات والتذاكر (عمدتان عريضتان)
-    col1, col2 = st.columns(2, gap="large")
+    # الصف الأول: الحجوزات والتذاكر
+    col1, col2 = st.columns(2, gap="medium")
     
     with col1:
         st.markdown("""
-        <div class="dashboard-card-wrapper">
-            <div class="card-icon-container"><i class="fa-solid fa-calendar-days"></i></div>
-            <div class="card-title-text">حجز سيشن وتقويم المواعيد</div>
-            <div class="card-desc-text">إضافة حجز جديد، طباعة العقد المالي، وتتبع جدول المواعيد</div>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("حجز سيشن", key="btn_nav_bookings"):
-            st.session_state.current_screen = 'bookings'
-            st.rerun()
-
-    with col2:
-        st.markdown("""
-        <div class="dashboard-card-wrapper">
+        <div class="card-box-container" style="min-height: 160px;">
             <div class="card-icon-container"><i class="fa-solid fa-ticket"></i></div>
             <div class="card-title-text">قطع تذاكر الأفراد</div>
             <div class="card-desc-text">إصدار تذاكر الدخول الفورية وطباعة الإيصالات المالية فوراً</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("قطع تذاكر", key="btn_nav_tickets"):
+        if st.button("تذاكر", key="btn_nav_tickets"):
             st.session_state.current_screen = 'tickets'
             st.rerun()
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    with col2:
+        st.markdown("""
+        <div class="card-box-container" style="min-height: 160px;">
+            <div class="card-icon-container"><i class="fa-solid fa-calendar-days"></i></div>
+            <div class="card-title-text">حجز سيشن وتقويم المواعيد</div>
+            <div class="card-desc-text">إضافة حجز جديد، طباعة العقد المالي، وتتبع جدول المواعيد</div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("حجوزات", key="btn_nav_bookings"):
+            st.session_state.current_screen = 'bookings'
+            st.rerun()
 
-    # الصف الثاني: الخدمات والأقسام الفرعية (4 أعمدة متناسقة)
-    col3, col4, col5, col6 = st.columns(4, gap="medium")
+    st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
+
+    # الصف الثاني: الخدمات والأقسام الفرعية (4 أعمدة متناسقة ومضمومة للأعلى لتفادي النزول لأسفل الصفحة)
+    col3, col4, col5, col6 = st.columns(4, gap="small")
     
     with col3:
         st.markdown("""
-        <div class="dashboard-card-wrapper" style="min-height: 180px;">
-            <div class="card-icon-container"><i class="fa-solid fa-chart-pie"></i></div>
-            <div class="card-title-text">التقارير</div>
-            <div class="card-desc-text">الحسابات والربحية</div>
+        <div class="card-box-container" style="min-height: 140px;">
+            <div class="card-icon-container" style="width: 45px; height: 45px; margin-bottom: 8px;"><i class="fa-solid fa-users-gear" style="font-size: 18px;"></i></div>
+            <div class="card-title-text" style="font-size: 15px;">العمالة</div>
+            <div class="card-desc-text">الحضور والسُلف</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("التقارير", key="btn_nav_reports"):
-            st.session_state.current_screen = 'reports'
+        if st.button("العمالة", key="btn_nav_staff"):
+            st.session_state.current_screen = 'staff'
             st.rerun()
 
     with col4:
         st.markdown("""
-        <div class="dashboard-card-wrapper" style="min-height: 180px;">
-            <div class="card-icon-container"><i class="fa-solid fa-boxes-stacked"></i></div>
-            <div class="card-title-text">العهدة</div>
-            <div class="card-desc-text">المعدات والأجهزة</div>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("العهدة", key="btn_nav_equip"):
-            st.session_state.current_screen = 'equip'
-            st.rerun()
-
-    with col5:
-        st.markdown("""
-        <div class="dashboard-card-wrapper" style="min-height: 180px;">
-            <div class="card-icon-container"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-            <div class="card-title-text">المصروفات</div>
+        <div class="card-box-container" style="min-height: 140px;">
+            <div class="card-icon-container" style="width: 45px; height: 45px; margin-bottom: 8px;"><i class="fa-solid fa-file-invoice-dollar" style="font-size: 18px;"></i></div>
+            <div class="card-title-text" style="font-size: 15px;">المصروفات</div>
             <div class="card-desc-text">النفقات الإدارية</div>
         </div>
         """, unsafe_allow_html=True)
@@ -311,16 +308,28 @@ if st.session_state.current_screen == 'dashboard':
             st.session_state.current_screen = 'expenses'
             st.rerun()
 
-    with col6:
+    with col5:
         st.markdown("""
-        <div class="dashboard-card-wrapper" style="min-height: 180px;">
-            <div class="card-icon-container"><i class="fa-solid fa-users-gear"></i></div>
-            <div class="card-title-text">العمالة</div>
-            <div class="card-desc-text">الحضور والسُلف</div>
+        <div class="card-box-container" style="min-height: 140px;">
+            <div class="card-icon-container" style="width: 45px; height: 45px; margin-bottom: 8px;"><i class="fa-solid fa-boxes-stacked" style="font-size: 18px;"></i></div>
+            <div class="card-title-text" style="font-size: 15px;">العهدة</div>
+            <div class="card-desc-text">المعدات والأجهزة</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("العمالة", key="btn_nav_staff"):
-            st.session_state.current_screen = 'staff'
+        if st.button("العهدة", key="btn_nav_equip"):
+            st.session_state.current_screen = 'equip'
+            st.rerun()
+
+    with col6:
+        st.markdown("""
+        <div class="card-box-container" style="min-height: 140px;">
+            <div class="card-icon-container" style="width: 45px; height: 45px; margin-bottom: 8px;"><i class="fa-solid fa-chart-pie" style="font-size: 18px;"></i></div>
+            <div class="card-title-text" style="font-size: 15px;">التقارير</div>
+            <div class="card-desc-text">الحسابات والربحية</div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("التقارير", key="btn_nav_reports"):
+            st.session_state.current_screen = 'reports'
             st.rerun()
 
 # ==========================================
