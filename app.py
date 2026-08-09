@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import httpx
 from supabase import create_client, Client
 
 # --- ضبط إعدادات الصفحة ---
@@ -10,34 +9,14 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- الاتصال بقاعدة البيانات مع تخطي مشكلة التشفير تلقائياً ---
+# --- الاتصال بقاعدة البيانات ---
 try:
     url = str(st.secrets["SUPABASE_URL"]).strip()
     key = str(st.secrets["SUPABASE_KEY"]).strip()
-
-    # إنشاء Client مخصص من httpx يتكفل بنقل الـ Headers بشكل نقي تماماً
-    custom_http_client = httpx.Client(
-        headers={
-            "apiKey": key,
-            "Authorization": f"Bearer {key}"
-        }
-    )
-
-    supabase: Client = create_client(
-        supabase_url=url,
-        supabase_key=key,
-        options={"httpx_client": custom_http_client}
-    )
+    supabase: Client = create_client(url, key)
 except Exception as e:
-    # محاولة الاتصال المباشر بالطريقة العادية في حال اختلف إصدار المكتبة
-    try:
-        supabase: Client = create_client(
-            str(st.secrets["SUPABASE_URL"]).strip(),
-            str(st.secrets["SUPABASE_KEY"]).strip()
-        )
-    except Exception as ex:
-        st.error(f"خطأ في الاتصال بقاعدة البيانات: {ex}")
-        st.stop()
+    st.error(f"خطأ في الاتصال بقاعدة البيانات: {e}")
+    st.stop()
 
 # --- القائمة الجانبية (Sidebar Navigation) ---
 st.sidebar.title("سيستم الاستوديو")
