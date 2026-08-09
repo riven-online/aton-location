@@ -84,11 +84,11 @@ st.markdown("""
         background: linear-gradient(145deg, #161b26, #0f131c);
         border: 1px solid rgba(212, 175, 55, 0.3);
         border-radius: 16px;
-        padding: 25px 20px 15px 20px;
+        padding: 25px 20px;
         text-align: center;
         box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-        margin-bottom: 0px;
-        min-height: 130px;
+        margin-bottom: 12px;
+        min-height: 140px;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -106,24 +106,23 @@ st.markdown("""
         margin: 0;
     }
 
-    /* توحيد وتوسيط أزرار الـ Streamlit تحت الكروت بدقة */
+    /* توحيد وتوسيط أزرار الـ Streamlit تحت الكروت بدقة مئوية كاملة */
     .stButton {
         display: flex;
         justify-content: center;
         width: 100%;
-        margin-top: 10px;
     }
     
     .stButton>button {
         background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%) !important;
         color: #000000 !important;
         font-weight: 800 !important;
-        font-size: 15px !important;
+        font-size: 14px !important;
         border: none !important;
         border-radius: 12px !important;
-        padding: 10px 20px !important;
+        padding: 10px 15px !important;
         width: 100% !important;
-        max-width: 240px !important;
+        max-width: 200px !important;
         margin: 0 auto !important;
         box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -225,7 +224,7 @@ st.divider()
 if st.session_state.current_screen == 'dashboard':
     st.markdown("<h3 style='text-align: center; color: #d4af37; margin-bottom: 25px;'>اختر القسم المطلوب للبدء</h3>", unsafe_allow_html=True)
     
-    # الصف الأول: الحجوزات والتذاكر
+    # الصف الأول: الحجوزات والتذاكر (كل كارت وتحته زره الخاص في نفس العمود تماماً)
     col1, col2 = st.columns(2, gap="large")
     
     with col1:
@@ -252,7 +251,7 @@ if st.session_state.current_screen == 'dashboard':
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # الصف الثاني: الخدمات والأقسام الفرعية (4 أعمدة)
+    # الصف الثاني: الخدمات والأقسام الفرعية (4 أعمدة، كل كارت تحته زره المتمحور تماماً)
     col3, col4, col5, col6 = st.columns(4, gap="medium")
     
     with col3:
@@ -495,49 +494,4 @@ elif st.session_state.current_screen == 'bookings':
 
     with tab_cal:
         st.subheader("تقويم استعلام المواعيد اليومية")
-        search_date = st.date_input("اختر اليوم للتحقق", value=date.today(), key="cal_search_date")
-        try:
-            all_b = supabase.table("bookings").select("*").execute().data
-            day_bookings = []
-            if all_b:
-                for b in all_b:
-                    b_d = str(b.get('session_date') or b.get('booking_date') or b.get('date') or '').split('T')[0]
-                    if b_d == str(search_date):
-                        day_bookings.append(b)
-
-            if day_bookings:
-                st.success(f"تم العثور على {len(day_bookings)} حجز في هذا التاريخ")
-                df_day = pd.DataFrame(day_bookings)
-                st.dataframe(df_day, use_container_width=True)
-            else:
-                st.info("لا توجد حجوزات مسجلة في هذا اليوم")
-        except Exception as ex:
-            st.warning(f"تعذر جلب الحجوزات: {ex}")
-
-    with tab_list:
-        st.subheader("سجل كافة الحجوزات المسجلة")
-        try:
-            res_all = supabase.table("bookings").select("*").execute().data
-            if res_all:
-                st.dataframe(pd.DataFrame(res_all), use_container_width=True)
-            else:
-                st.info("لا توجد حجوزات سابقة مسجلة في قاعدة البيانات")
-        except Exception as ex:
-            st.error(f"خطأ في جلب السجل: {ex}")
-
-# شاشات الأقسام الأخرى الباقية (Reports, Equip, Expenses, Staff)
-elif st.session_state.current_screen == 'reports':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>التقارير والميزانية</h3>", unsafe_allow_html=True)
-    st.info("قسم التقارير المالية والربحية قيد العرض التفاعلي...")
-
-elif st.session_state.current_screen == 'equip':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>إدارة العهدة والمعدات</h3>", unsafe_allow_html=True)
-    st.info("قسم تسجيل وتسليم المعدات والعهدة...")
-
-elif st.session_state.current_screen == 'expenses':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>المصروفات والنفقات</h3>", unsafe_allow_html=True)
-    st.info("قسم تسجيل النفقات والمصروفات الإدارية اليومية...")
-
-elif st.session_state.current_screen == 'staff':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>العمالة والحضور والسُلف</h3>", unsafe_allow_html=True)
-    st.info("قسم تتبع الحضور، الانصراف، وسُلف الموظفين...")
+        search_date = st.date_input("اخت
