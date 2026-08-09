@@ -4,7 +4,7 @@ from supabase import create_client, Client
 from datetime import datetime, time, date
 
 # ==========================================
-# 1. تهيئة الصفحة والأنماط البصرية الحديثة
+# 1. تهيئة الصفحة والأنماط البصرية (بريميوم نقي)
 # ==========================================
 st.set_page_config(
     page_title="آتون لوكيشن | Aton Location POS",
@@ -13,6 +13,11 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# إدارة مسارات التنقل عبر الـ Query Params
+query_params = st.query_params
+if 'screen' in query_params:
+    st.session_state.current_screen = query_params['screen']
+
 if 'current_screen' not in st.session_state:
     st.session_state.current_screen = 'dashboard'
 if 'last_ticket' not in st.session_state:
@@ -20,82 +25,107 @@ if 'last_ticket' not in st.session_state:
 if 'last_booking' not in st.session_state:
     st.session_state.last_booking = None
 
+# دالة لتغيير الشاشة نظرياً عند النقر على كروت الـ HTML
+if 'nav' in query_params:
+    target_screen = query_params['nav']
+    if target_screen in ['dashboard', 'bookings', 'tickets', 'reports', 'equip', 'expenses', 'staff']:
+        st.session_state.current_screen = target_screen
+
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
     @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 
     html, body, [class*="css"] {
         font-family: 'Cairo', sans-serif !important;
         direction: rtl;
         text-align: right;
-        background-color: #0b0d12;
-        color: #f8fafc;
+        background-color: #0b0f19;
+        color: #f1f5f9;
     }
     
     .stApp {
-        background-color: #0b0d12;
+        background-color: #0b0f19;
     }
 
     [data-testid="stSidebar"], [data-testid="collapsedControl"] {
         display: none !important;
     }
-    
-    @keyframes goldNeonGlow {
-        0% {
-            text-shadow: 0 0 5px rgba(212, 175, 55, 0.4);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(212, 175, 55, 0.15);
-        }
-        50% {
-            text-shadow: 0 0 15px rgba(212, 175, 55, 0.8);
-            box-shadow: 0 8px 35px rgba(212, 175, 55, 0.3), inset 0 0 25px rgba(212, 175, 55, 0.3);
-        }
-        100% {
-            text-shadow: 0 0 5px rgba(212, 175, 55, 0.4);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(212, 175, 55, 0.15);
-        }
-    }
 
-    .pos-header-center {
-        background: linear-gradient(135deg, #141824 0%, #0d1017 100%);
-        border: 2px solid #d4af37;
-        padding: 22px;
-        border-radius: 16px;
-        margin: 10px auto 30px auto;
-        text-align: center !important;
+    /* هيدر فاخر وهادئ */
+    .app-header {
+        background: linear-gradient(135deg, #131b2e 0%, #0d1322 100%);
+        border: 1px solid rgba(212, 175, 55, 0.3);
+        padding: 18px;
+        border-radius: 12px;
+        margin: 10px auto 25px auto;
+        text-align: center;
         width: 100%;
-        max-width: 800px;
-        animation: goldNeonGlow 3s infinite ease-in-out;
+        max-width: 700px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     }
-    .pos-title-center {
-        font-size: 32px;
-        font-weight: 900;
-        color: #fce181;
-        letter-spacing: 2px;
+    .app-title {
+        font-size: 26px;
+        font-weight: 800;
+        color: #e2c062;
+        letter-spacing: 1px;
         margin: 0;
-        text-align: center !important;
     }
 
-    .stButton>button {
-        background: linear-gradient(145deg, #161b26, #0f131c) !important;
-        border: 1px solid rgba(212, 175, 55, 0.4) !important;
-        color: #ffffff !important;
-        font-weight: 700 !important;
-        font-size: 15px !important;
-        border-radius: 14px !important;
-        padding: 20px 15px !important;
-        width: 100% !important;
-        min-height: 140px !important;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-        transition: all 0.3s ease !important;
-    }
-    .stButton>button:hover {
-        border-color: #d4af37 !important;
-        background: linear-gradient(145deg, #1f2736, #141925) !important;
-        box-shadow: 0 12px 30px rgba(212, 175, 55, 0.3) !important;
-        transform: translateY(-3px);
+    /* شبكة الكروت الاحترافية (HTML Cards) بدلاً من أزرار Streamlit العشوائية */
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        max-width: 1000px;
+        margin: 20px auto;
+        padding: 0 10px;
     }
 
+    .premium-card {
+        background: linear-gradient(145deg, #161f33, #0f172a);
+        border: 1px solid rgba(212, 175, 55, 0.25);
+        border-radius: 14px;
+        padding: 24px 20px;
+        text-align: center;
+        text-decoration: none !important;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 150px;
+    }
+
+    .premium-card:hover {
+        border-color: #e2c062;
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px rgba(212, 175, 55, 0.2);
+        background: linear-gradient(145deg, #1c2740, #131d33);
+    }
+
+    .card-icon {
+        font-size: 28px;
+        color: #e2c062;
+        margin-bottom: 12px;
+    }
+
+    .card-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 6px;
+    }
+
+    .card-desc {
+        font-size: 11px;
+        color: #94a3b8;
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    /* إيصالات الطباعة */
     .receipt-container {
         max-width: 340px;
         margin: auto;
@@ -151,65 +181,75 @@ except Exception as e:
 # 3. الهيدر العلوي الموحد
 # ==========================================
 st.markdown("""
-<div class="pos-header-center">
-    <div class="pos-title-center">آتون لوكيشن | ATON LOCATION</div>
+<div class="app-header">
+    <div class="app-title">آتون لوكيشن | ATON LOCATION</div>
 </div>
 """, unsafe_allow_html=True)
 
 if st.session_state.current_screen != 'dashboard':
-    c_back1, c_back2, c_back3 = st.columns([1, 2, 1])
-    with c_back2:
-        if st.button("العودة للشاشة الرئيسية", key="back_to_home"):
+    col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
+    with col_b2:
+        if st.button("العودة للقائمة الرئيسية", key="back_home_btn", use_container_width=True):
             st.session_state.current_screen = 'dashboard'
             st.rerun()
 
 st.divider()
 
 # ==========================================
-# 4. الشاشة الرئيسية (Dashboard)
+# 4. الشاشة الرئيسية (Dashboard باستخدام كروت بريميوم منظمة)
 # ==========================================
 if st.session_state.current_screen == 'dashboard':
-    st.markdown("<h3 style='text-align: center; color: #d4af37; margin-bottom: 25px;'>اختر القسم المطلوب للبدء</h3>", unsafe_allow_html=True)
+    st.markdown("<h4 style='text-align: center; color: #e2c062; margin-bottom: 20px;'>اختر القسم المطلوب للبدء</h4>", unsafe_allow_html=True)
     
-    col1, col2 = st.columns(2, gap="large")
-    with col1:
-        if st.button("📅  حجز سيشن وتقويم المواعيد\nإضافة حجز جديد، طباعة العقد، وتتبع تقويم الأيام", key="btn_nav_bookings"):
-            st.session_state.current_screen = 'bookings'
-            st.rerun()
+    # استخدام نظام الروابط الذكية عبر Query Params لتفادي مشاكل أزرار الـ Streamlit تماماً
+    base_url = st.query_params.get("base_path", "")
+    
+    cards_html = """
+    <div class="cards-grid">
+        <a href="?nav=bookings" target="_self" class="premium-card">
+            <div class="card-icon"><i class="fa-solid fa-calendar-days"></i></div>
+            <div class="card-title">حجز سيشن وتقويم المواعيد</div>
+            <div class="card-desc">إضافة حجز جديد، طباعة العقد، وتتبع تقويم الأيام</div>
+        </a>
+        
+        <a href="?nav=tickets" target="_self" class="premium-card">
+            <div class="card-icon"><i class="fa-solid fa-ticket"></i></div>
+            <div class="card-title">قطع تذاكر الأفراد</div>
+            <div class="card-desc">إصدار تذاكر الدخول الفورية وطباعة الإيصال فوراً</div>
+        </a>
 
-    with col2:
-        if st.button("🎫  قطع تذاكر الأفراد\nإصدار تذاكر الدخول الفورية وطباعة الإيصال فوراً", key="btn_nav_tickets"):
-            st.session_state.current_screen = 'tickets'
-            st.rerun()
+        <a href="?nav=reports" target="_self" class="premium-card">
+            <div class="card-icon"><i class="fa-solid fa-chart-pie"></i></div>
+            <div class="card-title">التقارير والميزانية</div>
+            <div class="card-desc">الحسابات العامة ومتابعة الأرباح والمدفوعات</div>
+        </a>
 
-    st.markdown("<br>", unsafe_allow_html=True)
+        <a href="?nav=equip" target="_self" class="premium-card">
+            <div class="card-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+            <div class="card-title">العهدة والمعدات</div>
+            <div class="card-desc">إدارة الأجهزة والمعدات والأرقام التسلسلية</div>
+        </a>
 
-    col3, col4, col5, col6 = st.columns(4, gap="medium")
-    with col3:
-        if st.button("📊  التقارير\nالحسابات والربحية", key="btn_nav_reports"):
-            st.session_state.current_screen = 'reports'
-            st.rerun()
+        <a href="?nav=expenses" target="_self" class="premium-card">
+            <div class="card-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+            <div class="card-title">المصروفات النفقات الإدارية</div>
+            <div class="card-desc">تسجيل ومتابعة المصروفات اليومية والنفقات</div>
+        </a>
 
-    with col4:
-        if st.button("📦  العهدة\nالمعدات والأجهزة", key="btn_nav_equip"):
-            st.session_state.current_screen = 'equip'
-            st.rerun()
-
-    with col5:
-        if st.button("📁  المصروفات\nالنفقات الإدارية", key="btn_nav_expenses"):
-            st.session_state.current_screen = 'expenses'
-            st.rerun()
-
-    with col6:
-        if st.button("👥  العمالة\nالحضور والسُلف", key="btn_nav_staff"):
-            st.session_state.current_screen = 'staff'
-            st.rerun()
+        <a href="?nav=staff" target="_self" class="premium-card">
+            <div class="card-icon"><i class="fa-solid fa-users-gear"></i></div>
+            <div class="card-title">العمالة الحضور والسُلف</div>
+            <div class="card-desc">متابعة حضور وانصراف الموظفين وطلب السُلف</div>
+        </a>
+    </div>
+    """
+    st.markdown(cards_html, unsafe_allow_html=True)
 
 # ==========================================
 # 5. قسم كاشير تذاكر الأفراد
 # ==========================================
 elif st.session_state.current_screen == 'tickets':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>قطع تذاكر دخول الأفراد</h3>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #e2c062; text-align: center;'>قطع تذاكر دخول الأفراد</h4>", unsafe_allow_html=True)
     
     col_in, col_print = st.columns([1.1, 1], gap="large")
     
@@ -220,15 +260,15 @@ elif st.session_state.current_screen == 'tickets':
         total_price = count * price_per_ticket
         
         st.markdown(f"""
-        <div style="background: #141824; border:1px solid #d4af37; padding:15px; border-radius:10px; text-align:center; margin: 15px 0;">
-            <div style="font-size: 14px; color:#94a3b8;">الإجمالي المطلوب دفعه</div>
-            <div style="font-size: 28px; font-weight:900; color:#d4af37;">{total_price:,.0f} ج.م</div>
+        <div style="background: #131b2e; border:1px solid #e2c062; padding:15px; border-radius:10px; text-align:center; margin: 15px 0;">
+            <div style="font-size: 13px; color:#94a3b8;">الإجمالي المطلوب دفعه</div>
+            <div style="font-size: 26px; font-weight:800; color:#e2c062;">{total_price:,.0f} ج.م</div>
         </div>
         """, unsafe_allow_html=True)
         
         btn_c1, btn_c2 = st.columns(2)
         with btn_c1:
-            if st.button("تأكيد وحفظ وطباعة"):
+            if st.button("تأكيد وحفظ وطباعة", use_container_width=True):
                 try:
                     supabase.table("tickets").insert({
                         "count": count,
@@ -248,7 +288,7 @@ elif st.session_state.current_screen == 'tickets':
                     st.error(f"خطأ في العملية: {ex}")
 
         with btn_c2:
-            if st.button("إعادة الطباعة"):
+            if st.button("إعادة الطباعة", use_container_width=True):
                 if st.session_state.last_ticket:
                     st.info("جاري إعادة طباعة آخر تذكرة...")
                     st.markdown("<script>window.print();</script>", unsafe_allow_html=True)
@@ -289,7 +329,7 @@ elif st.session_state.current_screen == 'tickets':
 # 6. قسم حجوزات الأفراح والتقويم
 # ==========================================
 elif st.session_state.current_screen == 'bookings':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>حجز سيشن وتقويم المواعيد</h3>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #e2c062; text-align: center;'>حجز سيشن وتقويم المواعيد</h4>", unsafe_allow_html=True)
     
     tab_new, tab_cal, tab_list = st.tabs(["حجز جديد وإيصال", "تقويم الاستعلام", "سجل الحجوزات"])
 
@@ -321,7 +361,7 @@ elif st.session_state.current_screen == 'bookings':
 
             b_btn1, b_btn2 = st.columns(2)
             with b_btn1:
-                if st.button("تأكيد وطباعة"):
+                if st.button("تأكيد وطباعة", use_container_width=True):
                     if not client_name:
                         st.warning("يرجى إدخال اسم العميل أولاً.")
                     else:
@@ -354,7 +394,7 @@ elif st.session_state.current_screen == 'bookings':
                                 st.error(f"خطأ في الحفظ: {ex2}")
 
             with b_btn2:
-                if st.button("إعادة طباعة"):
+                if st.button("إعادة طباعة", use_container_width=True):
                     if st.session_state.last_booking:
                         st.info("جاري إعادة طباعة العقد الأخير...")
                         st.markdown("<script>window.print();</script>", unsafe_allow_html=True)
@@ -435,7 +475,7 @@ elif st.session_state.current_screen == 'bookings':
 # 7. قسم التقارير والميزانية
 # ==========================================
 elif st.session_state.current_screen == 'reports':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>التقارير والميزانية</h3>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #e2c062; text-align: center;'>التقارير والميزانية</h4>", unsafe_allow_html=True)
     try:
         rep_data = supabase.table("reports").select("*").execute().data
         if rep_data:
@@ -449,7 +489,7 @@ elif st.session_state.current_screen == 'reports':
 # 8. قسم العهدة والمعدات
 # ==========================================
 elif st.session_state.current_screen == 'equip':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>إدارة العهدة والمعدات</h3>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #e2c062; text-align: center;'>إدارة العهدة والمعدات</h4>", unsafe_allow_html=True)
     
     with st.form("add_equip_form"):
         st.subheader("إضافة عهدة أو معدة جديدة")
@@ -482,7 +522,7 @@ elif st.session_state.current_screen == 'equip':
 # 9. قسم المصروفات والنفقات
 # ==========================================
 elif st.session_state.current_screen == 'expenses':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>المصروفات والنفقات</h3>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #e2c062; text-align: center;'>المصروفات والنفقات</h4>", unsafe_allow_html=True)
     
     with st.form("add_expense_form"):
         st.subheader("تسجيل مصروف جديد")
@@ -514,7 +554,7 @@ elif st.session_state.current_screen == 'expenses':
 # 10. قسم العمالة والحضور والسُلف
 # ==========================================
 elif st.session_state.current_screen == 'staff':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>العمالة والحضور والسُلف</h3>", unsafe_allow_html=True)
+    st.markdown("<h4 style='color: #e2c062; text-align: center;'>العمالة والحضور والسُلف</h4>", unsafe_allow_html=True)
     
     with st.form("add_staff_form"):
         st.subheader("تسجيل موظف أو سُلفة جديدة")
