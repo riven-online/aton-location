@@ -13,16 +13,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# تهيئة متغيرات الجلسة (Session State) للاسم والورديّة
-if 'cashier_name' not in st.session_state:
-    st.session_state.cashier_name = "إسلام محمد"
-
-if 'session_name' not in st.session_state:
-    st.session_state.session_name = "الوردية الصباحية ☀️"
-
-if 'shift_start' not in st.session_state:
-    st.session_state.shift_start = "09:00 AM"
-
 if 'current_screen' not in st.session_state:
     st.session_state.current_screen = 'dashboard'
 if 'last_ticket' not in st.session_state:
@@ -58,57 +48,33 @@ st.markdown("""
     .pos-header-center {
         background: linear-gradient(135deg, #141824 0%, #0d1017 100%);
         border: 2px solid #d4af37;
-        padding: 20px;
+        padding: 22px;
         border-radius: 16px;
-        margin: 0 auto 20px auto;
+        margin: 10px auto 30px auto;
         text-align: center !important;
         width: 100%;
-        max-width: 900px;
+        max-width: 800px;
         box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
     }
     .pos-title-center {
-        font-size: 28px;
+        font-size: 32px;
         font-weight: 900;
         color: #d4af37;
-        letter-spacing: 1.5px;
+        letter-spacing: 2px;
         margin: 0;
         text-align: center !important;
     }
 
-    /* بطاقات معلومات الكاشير والسيشن العلوية */
-    .info-card {
-        background: rgba(20, 24, 36, 0.85);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(212, 175, 55, 0.25);
-        border-radius: 14px;
-        padding: 14px 18px;
-        text-align: center;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        margin-bottom: 20px;
-    }
-    .info-label {
-        font-size: 12px;
-        color: #94a3b8;
-        margin-bottom: 4px;
-        font-weight: 600;
-    }
-    .info-value {
-        font-size: 16px;
-        color: #f8fafc;
-        font-weight: 800;
-    }
-
-    /* كروت الكاشير الرئيسية */
-    .pos-card-button {
+    /* كروت الأقسام الرئيسية المتناسقة */
+    .pos-card-container {
         background: linear-gradient(145deg, #161b26, #0f131c);
         border: 1px solid rgba(212, 175, 55, 0.3);
         border-radius: 16px;
-        padding: 25px 15px;
+        padding: 25px 20px;
         text-align: center;
-        transition: all 0.3s ease;
         box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-        margin-bottom: 12px;
-        min-height: 120px;
+        margin-bottom: 15px;
+        min-height: 140px;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -116,17 +82,17 @@ st.markdown("""
     }
     .pos-card-title {
         color: #ffffff;
-        font-size: 19px;
+        font-size: 20px;
         font-weight: 800;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
     }
     .pos-card-desc {
         color: #94a3b8;
-        font-size: 12px;
+        font-size: 13px;
         margin: 0;
     }
 
-    /* توسيط أزرار Streamlit بداخل كل العمود */
+    /* توحيد تنسيق أزرار الـ Streamlit تحت الكروت لتكون متناسقة تماماً */
     .stButton {
         display: flex;
         justify-content: center;
@@ -138,11 +104,17 @@ st.markdown("""
         font-weight: 800 !important;
         font-size: 15px !important;
         border: none !important;
-        border-radius: 10px !important;
-        padding: 10px 20px !important;
-        width: 80% !important;
+        border-radius: 12px !important;
+        padding: 12px 24px !important;
+        width: 100% !important;
+        max-width: 260px !important;
         margin: 0 auto !important;
         box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);
+        transition: transform 0.2s ease;
+    }
+    
+    .stButton>button:hover {
+        transform: scale(1.02);
     }
 
     /* تصميم الإيصال الطباعي */
@@ -213,48 +185,13 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# 3. الهيدر العلوي الموحد ومعلومات الكاشير والسيشن
+# 3. الهيدر العلوي الموحد
 # ==========================================
 st.markdown("""
 <div class="pos-header-center">
     <div class="pos-title-center">آتون لوكيشن | ATON LOCATION</div>
 </div>
 """, unsafe_allow_html=True)
-
-# عرض بيانات الكاشير والسيشن الحالي في أعمدة أنيقة بأعلى الواجهة
-c_info1, c_info2, c_info3, c_info4 = st.columns(4)
-
-with c_info1:
-    st.markdown(f"""
-        <div class="info-card">
-            <div class="info-label">👤 كاشير الشيفت الحالي</div>
-            <div class="info-value">💼 {st.session_state.cashier_name}</div>
-        </div>
-    """, unsafe_allow_html=True)
-
-with c_info2:
-    st.markdown(f"""
-        <div class="info-card">
-            <div class="info-label">🕒 اسم السيشن / الورديّة</div>
-            <div class="info-value">🔄 {st.session_state.session_name}</div>
-        </div>
-    """, unsafe_allow_html=True)
-
-with c_info3:
-    st.markdown(f"""
-        <div class="info-card">
-            <div class="info-label">⏰ وقت بدء الشيفت</div>
-            <div class="info-value">⏱️ {st.session_state.shift_start}</div>
-        </div>
-    """, unsafe_allow_html=True)
-
-with c_info4:
-    st.markdown(f"""
-        <div class="info-card">
-            <div class="info-label">🟢 حالة النظام</div>
-            <div class="info-value" style="color: #34d399;">✨ متصل وجاهز</div>
-        </div>
-    """, unsafe_allow_html=True)
 
 if st.session_state.current_screen != 'dashboard':
     c_back1, c_back2, c_back3 = st.columns([1, 2, 1])
@@ -266,17 +203,17 @@ if st.session_state.current_screen != 'dashboard':
 st.divider()
 
 # ==========================================
-# 4. الشاشة الرئيسية (Dashboard - Centered Cards & Buttons)
+# 4. الشاشة الرئيسية (Dashboard - Organized Grid)
 # ==========================================
 if st.session_state.current_screen == 'dashboard':
-    st.markdown("<h3 style='text-align: center; color: #d4af37; margin-bottom: 30px;'>اختر القسم المطلوب للبدء</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; color: #d4af37; margin-bottom: 25px;'>اختر القسم المطلوب للبدء</h3>", unsafe_allow_html=True)
     
-    # الصف الأول: الحجوزات والتذاكر
-    row1_1, row1_2 = st.columns(2)
+    # الصف الأول: الحجوزات والتذاكر (قسمين رئيسيين بعرض متساوی)
+    col1, col2 = st.columns(2, gap="large")
     
-    with row1_1:
+    with col1:
         st.markdown("""
-        <div class="pos-card-button">
+        <div class="pos-card-container">
             <div class="pos-card-title">📅 حجز سيشن وتقويم المواعيد</div>
             <div class="pos-card-desc">إضافة حجز جديد، طباعة العقد، وتتبع تقويم الأيام</div>
         </div>
@@ -285,9 +222,9 @@ if st.session_state.current_screen == 'dashboard':
             st.session_state.current_screen = 'bookings'
             st.rerun()
 
-    with row1_2:
+    with col2:
         st.markdown("""
-        <div class="pos-card-button">
+        <div class="pos-card-container">
             <div class="pos-card-title">🎟️ قطع تذاكر الأفراد</div>
             <div class="pos-card-desc">إصدار تذاكر الدخول الفورية وطباعة الإيصال فوراً</div>
         </div>
@@ -298,50 +235,50 @@ if st.session_state.current_screen == 'dashboard':
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # الصف الثاني: باقي الخدمات والأقسام الفرعية
-    row2_1, row2_2, row2_3, row2_4 = st.columns(4)
+    # الصف الثاني: الخدمات والأقسام الفرعية (4 أعمدة مرتبة ومنتظمة)
+    col3, col4, col5, col6 = st.columns(4, gap="medium")
     
-    with row2_1:
+    with col3:
         st.markdown("""
-        <div class="pos-card-button">
-            <div class="pos-card-title">📊 التقارير والميزانية</div>
+        <div class="pos-card-container">
+            <div class="pos-card-title">📊 التقارير</div>
             <div class="pos-card-desc">الحسابات والربحية</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("التقارير", key="btn_nav_reports"):
+        if st.button("التقارير والميزانية", key="btn_nav_reports"):
             st.session_state.current_screen = 'reports'
             st.rerun()
 
-    with row2_2:
+    with col4:
         st.markdown("""
-        <div class="pos-card-button">
-            <div class="pos-card-title">🛠️ إدارة العهدة والمعدات</div>
-            <div class="pos-card-desc">تسليم واستلام المعدات</div>
+        <div class="pos-card-container">
+            <div class="pos-card-title">🛠️ العهدة</div>
+            <div class="pos-card-desc">المعدات والأجهزة</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("العهدة", key="btn_nav_equip"):
+        if st.button("إدارة العهدة", key="btn_nav_equip"):
             st.session_state.current_screen = 'equip'
             st.rerun()
 
-    with row2_3:
+    with col5:
         st.markdown("""
-        <div class="pos-card-button">
-            <div class="pos-card-title">💸 المصروفات والنفقات</div>
-            <div class="pos-card-desc">تسجيل المصاريف الإدارية</div>
+        <div class="pos-card-container">
+            <div class="pos-card-title">💸 المصروفات</div>
+            <div class="pos-card-desc">النفقات الإدارية</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("المصروفات", key="btn_nav_expenses"):
+        if st.button("تسجيل المصاريف", key="btn_nav_expenses"):
             st.session_state.current_screen = 'expenses'
             st.rerun()
 
-    with row2_4:
+    with col6:
         st.markdown("""
-        <div class="pos-card-button">
-            <div class="pos-card-title">👷 العمالة والحضور والسُلف</div>
-            <div class="pos-card-desc">سجل الحضور اليومي والسُلف</div>
+        <div class="pos-card-container">
+            <div class="pos-card-title">👷 العمالة</div>
+            <div class="pos-card-desc">الحضور والسُلف</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("العمالة", key="btn_nav_staff"):
+        if st.button("إدارة العمالة", key="btn_nav_staff"):
             st.session_state.current_screen = 'staff'
             st.rerun()
 
@@ -351,7 +288,7 @@ if st.session_state.current_screen == 'dashboard':
 elif st.session_state.current_screen == 'tickets':
     st.markdown("<h3 style='color: #d4af37; text-align: center;'>🎟️ قطع تذاكر دخول الأفراد</h3>", unsafe_allow_html=True)
     
-    col_in, col_print = st.columns([1.1, 1])
+    col_in, col_print = st.columns([1.1, 1], gap="large")
     
     with col_in:
         st.subheader("📝 بيانات التذكرة")
@@ -388,12 +325,12 @@ elif st.session_state.current_screen == 'tickets':
                     st.error(f"خطأ في العملية: {ex}")
 
         with btn_c2:
-            if st.button("🔄 إعادة طباعة آخر تذكرة"):
+            if st.button("🔄 إعادة الطباعة"):
                 if st.session_state.last_ticket:
-                    st.info("جاري إعادة طباعة آخر تذكرة دون تسجيلها مجدداً...")
+                    st.info("جاري إعادة طباعة آخر تذكرة...")
                     st.markdown("<script>window.print();</script>", unsafe_allow_html=True)
                 else:
-                    st.warning("لا توجد تذكرة سابقة مسجلة في الجلسة لإعادة طباعتها.")
+                    st.warning("لا توجد تذكرة سابقة.")
 
     with col_print:
         st.subheader("🖨️ معاينة الإيصال للطباعة")
@@ -434,7 +371,7 @@ elif st.session_state.current_screen == 'bookings':
     tab_new, tab_cal, tab_list = st.tabs(["حجز جديد وإيصال 📝", "تقويم الاستعلام 📅", "سجل الحجوزات 📋"])
 
     with tab_new:
-        col_b_input, col_b_print = st.columns([1.2, 1])
+        col_b_input, col_b_print = st.columns([1.2, 1], gap="large")
         
         with col_b_input:
             client_name = st.text_input("اسم العريس / العروسة 👤", key="b_cname")
@@ -461,7 +398,7 @@ elif st.session_state.current_screen == 'bookings':
 
             b_btn1, b_btn2 = st.columns(2)
             with b_btn1:
-                if st.button("✅ تأكيد وحفظ العقد وطباعة"):
+                if st.button("✅ تأكيد وطباعة"):
                     if not client_name:
                         st.warning("يرجى إدخال اسم العميل أولاً.")
                     else:
@@ -481,7 +418,7 @@ elif st.session_state.current_screen == 'bookings':
                         try:
                             supabase.table("bookings").insert(payload).execute()
                             st.session_state.last_booking = payload
-                            st.success("تم تأكيد الحجز وحفظه! جاري فتح الطباعة...")
+                            st.success("تم الحفظ بنجاح! جاري فتح الطباعة...")
                             st.markdown("<script>window.print();</script>", unsafe_allow_html=True)
                         except Exception as ex:
                             try:
@@ -494,12 +431,12 @@ elif st.session_state.current_screen == 'bookings':
                                 st.error(f"خطأ في الحفظ: {ex2}")
 
             with b_btn2:
-                if st.button("🔄 إعادة طباعة العقد الحالي"):
+                if st.button("🔄 إعادة طباعة"):
                     if st.session_state.last_booking:
                         st.info("جاري إعادة طباعة العقد الأخير...")
                         st.markdown("<script>window.print();</script>", unsafe_allow_html=True)
                     else:
-                        st.warning("لا يوجد عقد محجوز مؤخراً لإعادة طباعته.")
+                        st.warning("لا يوجد عقد محجوز مؤخراً.")
 
         with col_b_print:
             st.subheader("🖨️ معاينة عقد الحجز")
