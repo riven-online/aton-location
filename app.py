@@ -494,4 +494,49 @@ elif st.session_state.current_screen == 'bookings':
 
     with tab_cal:
         st.subheader("تقويم استعلام المواعيد اليومية")
-        search_date = st.date_input("اخت
+        search_date = st.date_input("اختر اليوم للتحقق", value=date.today(), key="cal_search_date")
+        try:
+            all_b = supabase.table("bookings").select("*").execute().data
+            day_bookings = []
+            if all_b:
+                for b in all_b:
+                    b_d = str(b.get('session_date') or b.get('booking_date') or b.get('date') or '').split('T')[0]
+                    if b_d == str(search_date):
+                        day_bookings.append(b)
+
+            if day_bookings:
+                st.success(f"تم العثور على {len(day_bookings)} حجز في هذا التاريخ")
+                df_day = pd.DataFrame(day_bookings)
+                st.dataframe(df_day, use_container_width=True)
+            else:
+                st.info("لا توجد حجوزات مسجلة في هذا اليوم")
+        except Exception as ex:
+            st.warning(f"تعذر جلب الحجوزات: {ex}")
+
+    with tab_list:
+        st.subheader("سجل كافة الحجوزات المسجلة")
+        try:
+            res_all = supabase.table("bookings").select("*").execute().data
+            if res_all:
+                st.dataframe(pd.DataFrame(res_all), use_container_width=True)
+            else:
+                st.info("لا توجد حجوزات سابقة مسجلة في قاعدة البيانات")
+        except Exception as ex:
+            st.error(f"خطأ في جلب السجل: {ex}")
+
+# شاشات الأقسام الأخرى الباقية (Reports, Equip, Expenses, Staff)
+elif st.session_state.current_screen == 'reports':
+    st.markdown("<h3 style='color: #d4af37; text-align: center;'>التقارير والميزانية</h3>", unsafe_allow_html=True)
+    st.info("قسم التقارير المالية والربحية قيد العرض التفاعلي...")
+
+elif st.session_state.current_screen == 'equip':
+    st.markdown("<h3 style='color: #d4af37; text-align: center;'>إدارة العهدة والمعدات</h3>", unsafe_allow_html=True)
+    st.info("قسم تسجيل وتسليم المعدات والعهدة...")
+
+elif st.session_state.current_screen == 'expenses':
+    st.markdown("<h3 style='color: #d4af37; text-align: center;'>المصروفات والنفقات</h3>", unsafe_allow_html=True)
+    st.info("قسم تسجيل النفقات والمصروفات الإدارية اليومية...")
+
+elif st.session_state.current_screen == 'staff':
+    st.markdown("<h3 style='color: #d4af37; text-align: center;'>العمالة والحضور والسُلف</h3>", unsafe_allow_html=True)
+    st.info("قسم تتبع الحضور، الانصراف، وسُلف الموظفين...")
