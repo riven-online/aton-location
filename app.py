@@ -459,3 +459,4 @@ elif st.session_state.current_screen == 'equip':
     st.markdown("---")
     st.subheader("سجل العهدة الحالية")
     try:
+  
