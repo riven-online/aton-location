@@ -4,7 +4,7 @@ from supabase import create_client, Client
 from datetime import datetime, time, date
 
 # ==========================================
-# 1. تهيئة الصفحة والأنماط البصرية (بريميوم نقي)
+# 1. تهيئة الصفحة والأنماط البصرية (بريميوم نظيف)
 # ==========================================
 st.set_page_config(
     page_title="آتون لوكيشن | Aton Location POS",
@@ -13,23 +13,12 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# إدارة مسارات التنقل عبر الـ Query Params
-query_params = st.query_params
-if 'screen' in query_params:
-    st.session_state.current_screen = query_params['screen']
-
 if 'current_screen' not in st.session_state:
     st.session_state.current_screen = 'dashboard'
 if 'last_ticket' not in st.session_state:
     st.session_state.last_ticket = None
 if 'last_booking' not in st.session_state:
     st.session_state.last_booking = None
-
-# دالة لتغيير الشاشة نظرياً عند النقر على كروت الـ HTML
-if 'nav' in query_params:
-    target_screen = query_params['nav']
-    if target_screen in ['dashboard', 'bookings', 'tickets', 'reports', 'equip', 'expenses', 'staff']:
-        st.session_state.current_screen = target_screen
 
 st.markdown("""
 <style>
@@ -72,57 +61,27 @@ st.markdown("""
         margin: 0;
     }
 
-    /* شبكة الكروت الاحترافية (HTML Cards) بدلاً من أزرار Streamlit العشوائية */
-    .cards-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 20px;
-        max-width: 1000px;
-        margin: 20px auto;
-        padding: 0 10px;
+    /* تصميم أزرار القائمة الرئيسية لتكون ككروت احترافية متناسقة */
+    .stButton>button {
+        background: linear-gradient(145deg, #161f33, #0f172a) !important;
+        border: 1px solid rgba(212, 175, 55, 0.3) !important;
+        color: #f1f5f9 !important;
+        font-family: 'Cairo', sans-serif !important;
+        font-weight: 700 !important;
+        font-size: 15px !important;
+        border-radius: 12px !important;
+        padding: 25px 15px !important;
+        width: 100% !important;
+        min-height: 130px !important;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        transition: all 0.3s ease !important;
     }
-
-    .premium-card {
-        background: linear-gradient(145deg, #161f33, #0f172a);
-        border: 1px solid rgba(212, 175, 55, 0.25);
-        border-radius: 14px;
-        padding: 24px 20px;
-        text-align: center;
-        text-decoration: none !important;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-        transition: all 0.3s ease;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 150px;
-    }
-
-    .premium-card:hover {
-        border-color: #e2c062;
-        transform: translateY(-4px);
-        box-shadow: 0 10px 25px rgba(212, 175, 55, 0.2);
-        background: linear-gradient(145deg, #1c2740, #131d33);
-    }
-
-    .card-icon {
-        font-size: 28px;
-        color: #e2c062;
-        margin-bottom: 12px;
-    }
-
-    .card-title {
-        font-size: 16px;
-        font-weight: 700;
-        color: #ffffff;
-        margin-bottom: 6px;
-    }
-
-    .card-desc {
-        font-size: 11px;
-        color: #94a3b8;
-        margin: 0;
-        line-height: 1.4;
+    
+    .stButton>button:hover {
+        border-color: #e2c062 !important;
+        background: linear-gradient(145deg, #1c2740, #131d33) !important;
+        box-shadow: 0 10px 25px rgba(212, 175, 55, 0.2) !important;
+        transform: translateY(-3px);
     }
 
     /* إيصالات الطباعة */
@@ -196,54 +155,44 @@ if st.session_state.current_screen != 'dashboard':
 st.divider()
 
 # ==========================================
-# 4. الشاشة الرئيسية (Dashboard باستخدام كروت بريميوم منظمة)
+# 4. الشاشة الرئيسية (Dashboard)
 # ==========================================
 if st.session_state.current_screen == 'dashboard':
-    st.markdown("<h4 style='text-align: center; color: #e2c062; margin-bottom: 20px;'>اختر القسم المطلوب للبدء</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='text-align: center; color: #e2c062; margin-bottom: 25px;'>اختر القسم المطلوب للبدء</h4>", unsafe_allow_html=True)
     
-    # استخدام نظام الروابط الذكية عبر Query Params لتفادي مشاكل أزرار الـ Streamlit تماماً
-    base_url = st.query_params.get("base_path", "")
-    
-    cards_html = """
-    <div class="cards-grid">
-        <a href="?nav=bookings" target="_self" class="premium-card">
-            <div class="card-icon"><i class="fa-solid fa-calendar-days"></i></div>
-            <div class="card-title">حجز سيشن وتقويم المواعيد</div>
-            <div class="card-desc">إضافة حجز جديد، طباعة العقد، وتتبع تقويم الأيام</div>
-        </a>
-        
-        <a href="?nav=tickets" target="_self" class="premium-card">
-            <div class="card-icon"><i class="fa-solid fa-ticket"></i></div>
-            <div class="card-title">قطع تذاكر الأفراد</div>
-            <div class="card-desc">إصدار تذاكر الدخول الفورية وطباعة الإيصال فوراً</div>
-        </a>
+    col1, col2 = st.columns(2, gap="large")
+    with col1:
+        if st.button("حجز سيشن وتقويم المواعيد\nإضافة حجز جديد، طباعة العقد، وتتبع تقويم الأيام", key="btn_nav_bookings"):
+            st.session_state.current_screen = 'bookings'
+            st.rerun()
 
-        <a href="?nav=reports" target="_self" class="premium-card">
-            <div class="card-icon"><i class="fa-solid fa-chart-pie"></i></div>
-            <div class="card-title">التقارير والميزانية</div>
-            <div class="card-desc">الحسابات العامة ومتابعة الأرباح والمدفوعات</div>
-        </a>
+    with col2:
+        if st.button("قطع تذاكر الأفراد\nإصدار تذاكر الدخول الفورية وطباعة الإيصال فوراً", key="btn_nav_tickets"):
+            st.session_state.current_screen = 'tickets'
+            st.rerun()
 
-        <a href="?nav=equip" target="_self" class="premium-card">
-            <div class="card-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
-            <div class="card-title">العهدة والمعدات</div>
-            <div class="card-desc">إدارة الأجهزة والمعدات والأرقام التسلسلية</div>
-        </a>
+    st.markdown("<br>", unsafe_allow_html=True)
 
-        <a href="?nav=expenses" target="_self" class="premium-card">
-            <div class="card-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-            <div class="card-title">المصروفات النفقات الإدارية</div>
-            <div class="card-desc">تسجيل ومتابعة المصروفات اليومية والنفقات</div>
-        </a>
+    col3, col4, col5, col6 = st.columns(4, gap="medium")
+    with col3:
+        if st.button("التقارير والميزانية\nالحسابات ومتابعة الأرباح", key="btn_nav_reports"):
+            st.session_state.current_screen = 'reports'
+            st.rerun()
 
-        <a href="?nav=staff" target="_self" class="premium-card">
-            <div class="card-icon"><i class="fa-solid fa-users-gear"></i></div>
-            <div class="card-title">العمالة الحضور والسُلف</div>
-            <div class="card-desc">متابعة حضور وانصراف الموظفين وطلب السُلف</div>
-        </a>
-    </div>
-    """
-    st.markdown(cards_html, unsafe_allow_html=True)
+    with col4:
+        if st.button("العهدة والمعدات\nإدارة الأجهزة والأرقام", key="btn_nav_equip"):
+            st.session_state.current_screen = 'equip'
+            st.rerun()
+
+    with col5:
+        if st.button("المصروفات والنفقات\nالنفقات والمصاريف اليومية", key="btn_nav_expenses"):
+            st.session_state.current_screen = 'expenses'
+            st.rerun()
+
+    with col6:
+        if st.button("العمالة والحضور والسُلف\nحضور الموظفين وطلب السُلف", key="btn_nav_staff"):
+            st.session_state.current_screen = 'staff'
+            st.rerun()
 
 # ==========================================
 # 5. قسم كاشير تذاكر الأفراد
@@ -510,75 +459,3 @@ elif st.session_state.current_screen == 'equip':
     st.markdown("---")
     st.subheader("سجل العهدة الحالية")
     try:
-        eq_data = supabase.table("equip").select("*").execute().data
-        if eq_data:
-            st.dataframe(pd.DataFrame(eq_data), use_container_width=True)
-        else:
-            st.info("لا توجد معدات مسجلة في العهدة.")
-    except Exception as ex:
-        st.warning(f"ملاحظة: جدول العهدة غير متاح أو فارغ ({ex})")
-
-# ==========================================
-# 9. قسم المصروفات والنفقات
-# ==========================================
-elif st.session_state.current_screen == 'expenses':
-    st.markdown("<h4 style='color: #e2c062; text-align: center;'>المصروفات والنفقات</h4>", unsafe_allow_html=True)
-    
-    with st.form("add_expense_form"):
-        st.subheader("تسجيل مصروف جديد")
-        exp_desc = st.text_input("بيان المصروف (السبب)")
-        exp_amount = st.number_input("المبلغ (ج.م)", min_value=0.0, value=50.0, step=10.0)
-        exp_submit = st.form_submit_button("حفظ المصروف")
-        if exp_submit:
-            if exp_desc:
-                try:
-                    supabase.table("expenses").insert({"description": exp_desc, "amount": exp_amount}).execute()
-                    st.success("تم تسجيل المصروف بنجاح!")
-                except Exception as e:
-                    st.error(f"خطأ في حفظ المصروف: {e}")
-            else:
-                st.warning("يرجى كتابة بيان المصروف.")
-
-    st.markdown("---")
-    st.subheader("سجل المصروفات اليومية")
-    try:
-        exp_data = supabase.table("expenses").select("*").execute().data
-        if exp_data:
-            st.dataframe(pd.DataFrame(exp_data), use_container_width=True)
-        else:
-            st.info("لا توجد مصروفات مسجلة حتى الآن.")
-    except Exception as ex:
-        st.warning(f"ملاحظة: جدول المصروفات غير متاح أو فارغ ({ex})")
-
-# ==========================================
-# 10. قسم العمالة والحضور والسُلف
-# ==========================================
-elif st.session_state.current_screen == 'staff':
-    st.markdown("<h4 style='color: #e2c062; text-align: center;'>العمالة والحضور والسُلف</h4>", unsafe_allow_html=True)
-    
-    with st.form("add_staff_form"):
-        st.subheader("تسجيل موظف أو سُلفة جديدة")
-        st_name = st.text_input("اسم الموظف")
-        st_action = st.selectbox("نوع الحركة", ["حضور", "انصراف", "طلب سُلفة"])
-        st_amount = st.number_input("قيمة السُلفة (إن وجدت)", min_value=0.0, value=0.0, step=50.0)
-        st_submit = st.form_submit_button("حفظ حركة الموظف")
-        if st_submit:
-            if st_name:
-                try:
-                    supabase.table("staff").insert({"staff_name": st_name, "action": st_action, "amount": st_amount}).execute()
-                    st.success("تم تسجيل الحركة بنجاح!")
-                except Exception as e:
-                    st.error(f"خطأ في الحفظ: {e}")
-            else:
-                st.warning("يرجى إدخال اسم الموظف.")
-
-    st.markdown("---")
-    st.subheader("سجل العمالة والحضور")
-    try:
-        st_data = supabase.table("staff").select("*").execute().data
-        if st_data:
-            st.dataframe(pd.DataFrame(st_data), use_container_width=True)
-        else:
-            st.info("لا توجد بيانات مسجلة للعمالة.")
-    except Exception as ex:
-        st.warning(f"ملاحظة: جدول العمالة غير متاح أو فارغ ({ex})")
