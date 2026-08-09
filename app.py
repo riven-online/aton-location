@@ -82,21 +82,26 @@ st.markdown("""
         text-align: center !important;
     }
 
-    /* تصميم الكروت لتكون بمثابة أزرار تفاعلية فاخرة بالكامل */
+    /* تصميم الكروت والأيقونات المضيئة الفاخرة */
     .pos-card-container {
         background: linear-gradient(145deg, #161b26, #0f131c);
         border: 1px solid rgba(212, 175, 55, 0.35);
         border-radius: 16px;
-        padding: 28px 20px;
+        padding: 24px 20px 20px 20px;
         text-align: center;
         box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        margin-bottom: 10px;
-        min-height: 170px;
+        margin-bottom: 12px;
+        min-height: 160px;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         transition: all 0.3s ease;
+    }
+    .pos-card-container:hover {
+        border-color: #d4af37;
+        box-shadow: 0 12px 35px rgba(212, 175, 55, 0.2);
+        transform: translateY(-3px);
     }
     
     .card-icon-circle {
@@ -128,26 +133,31 @@ st.markdown("""
         margin: 0;
     }
 
-    /* تخصيص أزرار الـ Streamlit لتملأ الكارت وتصبح مخفية لكن قابلة للضغط بالكامل */
+    /* توسيط أزرار الـ Streamlit باحترافية تحت كل كارت */
+    .stButton {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
+    
     .stButton>button {
-        background: linear-gradient(145deg, #161b26, #0f131c) !important;
-        border: 1px solid rgba(212, 175, 55, 0.4) !important;
-        color: #ffffff !important;
-        font-weight: 700 !important;
-        font-size: 16px !important;
-        border-radius: 16px !important;
-        padding: 35px 20px !important;
+        background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%) !important;
+        color: #000000 !important;
+        font-weight: 800 !important;
+        font-size: 14px !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 10px 15px !important;
         width: 100% !important;
-        min-height: 170px !important;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        transition: all 0.3s ease !important;
+        max-width: 200px !important;
+        margin: 0 auto !important;
+        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
     
     .stButton>button:hover {
-        border-color: #d4af37 !important;
-        background: linear-gradient(145deg, #1f2736, #141925) !important;
-        box-shadow: 0 12px 35px rgba(212, 175, 55, 0.3) !important;
-        transform: translateY(-3px);
+        transform: scale(1.02);
+        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
     }
 
     /* تصميم الإيصال الطباعي */
@@ -218,7 +228,7 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# 3. الهيدر العلوي الموحد مع تأثير النيون
+# 3. الهيدر العلوي الموحد مع تأثير النيون الذهبي المتبادل
 # ==========================================
 st.markdown("""
 <div class="pos-header-center">
@@ -236,7 +246,7 @@ if st.session_state.current_screen != 'dashboard':
 st.divider()
 
 # ==========================================
-# 4. الشاشة الرئيسية (Dashboard - Interactive Cards)
+# 4. الشاشة الرئيسية (Dashboard - Grid Layout with Gorgeous Icons)
 # ==========================================
 if st.session_state.current_screen == 'dashboard':
     st.markdown("<h3 style='text-align: center; color: #d4af37; margin-bottom: 25px;'>اختر القسم المطلوب للبدء</h3>", unsafe_allow_html=True)
@@ -245,12 +255,26 @@ if st.session_state.current_screen == 'dashboard':
     col1, col2 = st.columns(2, gap="large")
     
     with col1:
-        if st.button("📅  حجز سيشن وتقويم المواعيد\nإضافة حجز جديد، طباعة العقد، وتتبع تقويم الأيام", key="btn_nav_bookings"):
+        st.markdown("""
+        <div class="pos-card-container">
+            <div class="card-icon-circle"><i class="fa-solid fa-calendar-days"></i></div>
+            <div class="pos-card-title">حجز سيشن وتقويم المواعيد</div>
+            <div class="pos-card-desc">إضافة حجز جديد، طباعة العقد، وتتبع تقويم الأيام</div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("دخول قسم الحجوزات", key="btn_nav_bookings"):
             st.session_state.current_screen = 'bookings'
             st.rerun()
 
     with col2:
-        if st.button("🎫  قطع تذاكر الأفراد\nإصدار تذاكر الدخول الفورية وطباعة الإيصال فوراً", key="btn_nav_tickets"):
+        st.markdown("""
+        <div class="pos-card-container">
+            <div class="card-icon-circle"><i class="fa-solid fa-ticket"></i></div>
+            <div class="pos-card-title">قطع تذاكر الأفراد</div>
+            <div class="pos-card-desc">إصدار تذاكر الدخول الفورية وطباعة الإيصال فوراً</div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("دخول كاشير التذاكر", key="btn_nav_tickets"):
             st.session_state.current_screen = 'tickets'
             st.rerun()
 
@@ -260,22 +284,50 @@ if st.session_state.current_screen == 'dashboard':
     col3, col4, col5, col6 = st.columns(4, gap="medium")
     
     with col3:
-        if st.button("📊  التقارير\nالحسابات والربحية", key="btn_nav_reports"):
+        st.markdown("""
+        <div class="pos-card-container">
+            <div class="card-icon-circle"><i class="fa-solid fa-chart-pie"></i></div>
+            <div class="pos-card-title">التقارير</div>
+            <div class="pos-card-desc">الحسابات والربحية</div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("التقارير والميزانية", key="btn_nav_reports"):
             st.session_state.current_screen = 'reports'
             st.rerun()
 
     with col4:
-        if st.button("📦  العهدة\nالمعدات والأجهزة", key="btn_nav_equip"):
+        st.markdown("""
+        <div class="pos-card-container">
+            <div class="card-icon-circle"><i class="fa-solid fa-boxes-stacked"></i></div>
+            <div class="pos-card-title">العهدة</div>
+            <div class="pos-card-desc">المعدات والأجهزة</div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("إدارة العهدة", key="btn_nav_equip"):
             st.session_state.current_screen = 'equip'
             st.rerun()
 
     with col5:
-        if st.button("📁  المصروفات\nالنفقات الإدارية", key="btn_nav_expenses"):
+        st.markdown("""
+        <div class="pos-card-container">
+            <div class="card-icon-circle"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+            <div class="pos-card-title">المصروفات</div>
+            <div class="pos-card-desc">النفقات الإدارية</div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("تسجيل المصاريف", key="btn_nav_expenses"):
             st.session_state.current_screen = 'expenses'
             st.rerun()
 
     with col6:
-        if st.button("👥  العمالة\nالحضور والسُلف", key="btn_nav_staff"):
+        st.markdown("""
+        <div class="pos-card-container">
+            <div class="card-icon-circle"><i class="fa-solid fa-users-gear"></i></div>
+            <div class="pos-card-title">العمالة</div>
+            <div class="pos-card-desc">الحضور والسُلف</div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("إدارة العمالة", key="btn_nav_staff"):
             st.session_state.current_screen = 'staff'
             st.rerun()
 
