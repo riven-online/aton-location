@@ -115,7 +115,7 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# 3. القائمة الجانبية الهيكلية
+# 3. القائمة الجانبية
 # ==========================================
 with st.sidebar:
     st.markdown("<h2 style='text-align: center; color: #d4af37;'>🎬 آتون لوكيشن</h2>", unsafe_allow_html=True)
@@ -137,7 +137,7 @@ with st.sidebar:
     st.caption("تاريخ اليوم: " + datetime.now().strftime("%Y-%m-%d"))
 
 # ==========================================
-# الصفحة 1: حجوزات الأفراح وتقويم المواعيد التفاعلي
+# الصفحة 1: حجوزات الأفراح والتقويم
 # ==========================================
 if page == "💍 حجوزات الأفراح والتقويم":
     st.markdown("<h2 style='color: #d4af37;'>💍 حجز سيشن وتقويم المواعيد - آتون لوكيشن</h2>", unsafe_allow_html=True)
@@ -172,46 +172,36 @@ if page == "💍 حجوزات الأفراح والتقويم":
             photographer_commission = st.number_input("عمولة / إكرامية المصور (إن وجد)", min_value=0, value=0, step=50, key="s_comm")
             notes = st.text_area("ملاحظات إضافية", key="s_notes")
 
-            # --- فحص التضارب المباشر ---
-            collision_found = False
-            try:
-                existing_b = supabase.table("bookings").select("*").eq("session_date", str(session_date)).eq("location_room", location_room).execute().data
-                if existing_b:
-                    for b in existing_b:
-                        if b.get("start_time") and b.get("end_time"):
-                            b_start = datetime.strptime(b["start_time"], "%H:%M:%S").time() if len(b["start_time"])==8 else datetime.strptime(b["start_time"], "%H:%M").time()
-                            b_end = datetime.strptime(b["end_time"], "%H:%M:%S").time() if len(b["end_time"])==8 else datetime.strptime(b["end_time"], "%H:%M").time()
-                            
-                            if (start_t < b_end) and (end_t > b_start):
-                                collision_found = True
-                                st.error(f"⚠️ تنبيه تضارب: ({location_room}) محجوز بالكامل في هذا الوقت للعميل: {b['client_name']}!")
-            except Exception as ex:
-                pass
-
             if st.button("💾 تأكيد وحفظ الحجز"):
                 if not client_name:
                     st.warning("يرجى إدخال اسم العميل.")
-                elif collision_found:
-                    st.error("لا يمكن الحفظ بسبب تضارب الموعد في نفس اللوكيشن!")
                 else:
+                    payload = {
+                        "client_name": client_name,
+                        "phone": phone,
+                        "session_date": str(session_date),
+                        "session_type": session_type,
+                        "total_agreed": total_agreed,
+                        "paid_amount": paid_amount,
+                        "start_time": str(start_t),
+                        "end_time": str(end_t),
+                        "location_room": location_room,
+                        "photographer_commission": photographer_commission,
+                        "notes": notes
+                    }
                     try:
-                        supabase.table("bookings").insert({
-                            "client_name": client_name,
-                            "phone": phone,
-                            "session_date": str(session_date),
-                            "session_type": session_type,
-                            "total_agreed": total_agreed,
-                            "paid_amount": paid_amount,
-                            "start_time": str(start_t),
-                            "end_time": str(end_t),
-                            "location_room": location_room,
-                            "photographer_commission": photographer_commission,
-                            "notes": notes
-                        }).execute()
+                        supabase.table("bookings").insert(payload).execute()
                         st.success("تم تأكيد الحجز وحفظ الموعد بنجاح!")
                         st.rerun()
                     except Exception as ex:
-                        st.error(f"حدث خطأ أثناء الحفظ: {ex}")
+                        # في حال كان اسم العمود في السيرفر booking_date بدلاً من session_date
+                        try:
+                            payload["booking_date"] = payload.pop("session_date")
+                            supabase.table("bookings").insert(payload).execute()
+                            st.success("تم تأكيد الحجز وحفظ الموعد بنجاح!")
+                            st.rerun()
+                        except Exception as ex2:
+                            st.error(f"حدث خطأ أثناء الحفظ: {ex2}")
 
         with col_preview:
             st.subheader("📄 إيصال حجز السيشن (جاهز للطباعة)")
@@ -251,32 +241,46 @@ if page == "💍 حجوزات الأفراح والتقويم":
         search_date = st.date_input("اختر اليوم للتحقق من الحجوزات", value=date.today(), key="cal_search")
         
         try:
-            day_bookings = supabase.table("bookings").select("*").eq("session_date", str(search_date)).order("start_time").execute().data
+            # جلب كافة البيانات وتنقيتها محلياً لتفادي تفاوت أسماء الأعمدة في Supabase
+            all_bookings = supabase.table("bookings").select("*").execute().data
             
+            day_bookings = []
+            if all_bookings:
+                for b in all_bookings:
+                    # فحص العمود سواء كان session_date أو booking_date أو date أو created_at
+                    b_date = str(b.get('session_date') or b.get('booking_date') or b.get('date') or '').split('T')[0]
+                    if b_date == str(search_date):
+                        day_bookings.append(b)
+
             if day_bookings:
                 st.success(f"📌 يوجد عدد **({len(day_bookings)})** سيشن محجوز في يوم {search_date}:")
                 
                 for idx, b in enumerate(day_bookings, 1):
-                    s_t = b.get('start_time', 'غير محدد')[:5]
-                    e_t = b.get('end_time', 'غير محدد')[:5]
+                    s_t = str(b.get('start_time', 'غير محدد'))[:5]
+                    e_t = str(b.get('end_time', 'غير محدد'))[:5]
+                    c_name = b.get('client_name', 'عميل')
+                    loc = b.get('location_room', 'اللوكيشن')
                     
-                    with st.expander(f"🎬 سيشن رقم {idx}: {b['client_name']} | ⏰ من {s_t} إلى {e_t} ({b.get('location_room', 'اللوكيشن')})"):
+                    with st.expander(f"🎬 سيشن رقم {idx}: {c_name} | ⏰ من {s_t} إلى {e_t} ({loc})"):
                         c_a, c_b, c_c = st.columns(3)
-                        c_a.write(f"**العميل:** {b['client_name']}")
+                        c_a.write(f"**العميل:** {c_name}")
                         c_a.write(f"**الهاتف:** {b.get('phone', '-')}")
                         c_b.write(f"**نوع السيشن:** {b.get('session_type', '-')}")
-                        c_b.write(f"**اللوكيشن:** {b.get('location_room', '-')}")
-                        c_c.write(f"**الاتفاق:** {b.get('total_agreed', 0)} ج.م")
-                        c_c.write(f"**المتبقي:** {b.get('total_agreed', 0) - b.get('paid_amount', 0)} ج.م")
+                        c_b.write(f"**اللوكيشن:** {loc}")
+                        tot = float(b.get('total_agreed', 0) or 0)
+                        pd_val = float(b.get('paid_amount', 0) or 0)
+                        c_c.write(f"**الاتفاق:** {tot:,.0f} ج.م")
+                        c_c.write(f"**المتبقي:** {tot - pd_val:,.0f} ج.م")
             else:
                 st.info(f"✨ يوم {search_date} فارغ تماماً ولا يوجد به أي حجوزات حتى الآن.")
+
         except Exception as ex:
-            st.error(f"خطأ أثناء جلب تقويم المواعيد: {ex}")
+            st.error(f"خطأ أثناء جلب المواعيد: {ex}")
 
     with tab_list:
         st.subheader("📋 سجل الحجوزات الكامل")
         try:
-            b_list = supabase.table("bookings").select("*").order("id", desc=True).execute().data
+            b_list = supabase.table("bookings").select("*").execute().data
             if b_list:
                 df_b = pd.DataFrame(b_list)
                 st.dataframe(df_b, use_container_width=True)
@@ -286,7 +290,7 @@ if page == "💍 حجوزات الأفراح والتقويم":
             st.error(f"خطأ في التحميل: {ex}")
 
 # ==========================================
-# الصفحة 2: حجز تذاكر أفراد + ريسيت التذكرة
+# الصفحة 2: حجز تذاكر أفراد
 # ==========================================
 elif page == "🎟️ حجز تذاكر أفراد":
     st.markdown("<h2 style='color: #d4af37;'>🎟️ قطع تذاكر أفراد - آتون لوكيشن</h2>", unsafe_allow_html=True)
@@ -307,7 +311,7 @@ elif page == "🎟️ حجز تذاكر أفراد":
                     "price_per_ticket": price_per_ticket,
                     "total_price": total_price
                 }).execute()
-                st.success("تم تسجيل التذكرة وقطع الإيصال بنجاح!")
+                st.success("تم تسجيل التذكرة بنجاح!")
             except Exception as ex:
                 st.error(f"خطأ: {ex}")
 
@@ -336,7 +340,7 @@ elif page == "🎟️ حجز تذاكر أفراد":
         st.markdown(ticket_receipt_html, unsafe_allow_html=True)
 
 # ==========================================
-# الصفحة 3: لوحة التحكم والتقارير المالية
+# الصفحة 3: لوحة التحكم والتقارير
 # ==========================================
 elif page == "📊 لوحة التحكم والتقارير":
     st.markdown("<h2 style='color: #d4af37;'>📊 الميزانية والتقارير التحليلية</h2>", unsafe_allow_html=True)
@@ -352,7 +356,6 @@ elif page == "📊 لوحة التحكم والتقارير":
 
         total_bookings_income = b_df['paid_amount'].sum() if not b_df.empty and 'paid_amount' in b_df else 0
         total_tickets_income = t_df['total_price'].sum() if not t_df.empty and 'total_price' in t_df else 0
-        
         photographer_comm = b_df['photographer_commission'].sum() if not b_df.empty and 'photographer_commission' in b_df else 0
         
         total_income = total_bookings_income + total_tickets_income
@@ -409,7 +412,7 @@ elif page == "📷 عهدة ومعدات التصوير":
                         st.error(f"خطأ أثناء الحفظ: {ex}")
 
     with col_eq2:
-        st.subheader("تحديث حالة المعدة (خروج / عودة)")
+        st.subheader("تحديث حالة المعدة")
         try:
             eq_data = supabase.table("equipment").select("*").execute().data
             if eq_data:
@@ -417,7 +420,7 @@ elif page == "📷 عهدة ومعدات التصوير":
                 selected_eq_id = st.selectbox("اختر المعدة", eq_df["id"].tolist(), format_func=lambda x: eq_df[eq_df['id']==x]['name'].values[0])
                 
                 status_choice = st.radio("الحالة الحالية", ["متاحة بالاستوديو", "خارجة لسيشن خارجي", "تحت الصيانة"])
-                assigned_to = st.text_input("اسم المصور المستلم (في حال الخروج)")
+                assigned_to = st.text_input("اسم المصور المستلم")
                 expected_return = st.text_input("موعد العودة المتوقع")
 
                 if st.button("تحديث حالة العهدة"):
@@ -430,44 +433,14 @@ elif page == "📷 عهدة ومعدات التصوير":
                     st.rerun()
 
                 st.divider()
-                st.dataframe(eq_df[['name', 'category', 'status', 'assigned_to', 'expected_return']], use_container_width=True)
+                st.dataframe(eq_df, use_container_width=True)
             else:
                 st.info("لا توجد معدات مسجلة بعد.")
         except Exception as ex:
             st.error(f"خطأ أثناء التحميل: {ex}")
 
 # ==========================================
-# الصفحة 5: المصروفات العامة
+# الصفحة 5: المصروفات والنفقات
 # ==========================================
 elif page == "💸 المصروفات والنفقات":
-    st.markdown("<h2 style='color: #d4af37;'>💸 تسجيل المصروفات والتكاليف</h2>", unsafe_allow_html=True)
-    with st.form("exp_form", clear_on_submit=True):
-        category = st.selectbox("بند المصروف", ["إيجار", "كهرباء ومرافق", "مشتريات كافيه وبضاعة", "صيانة", "نثريات"])
-        amount = st.number_input("المبلغ (ج.م)", min_value=1, value=50)
-        description = st.text_area("تفاصيل المصروف")
-        if st.form_submit_button("تسجيل الصرف"):
-            try:
-                supabase.table("expenses").insert({
-                    "category": category,
-                    "amount": amount,
-                    "description": description
-                }).execute()
-                st.success("تم تسجيل المصروف بنجاح!")
-            except Exception as ex:
-                st.error(f"خطأ: {ex}")
-
-# ==========================================
-# الصفحة 6: شؤون الموظفين والسُلف
-# ==========================================
-elif page == "👥 العمالة والسُلف":
-    st.markdown("<h2 style='color: #d4af37;'>👥 إدارة طاقم العمل والسُلف</h2>", unsafe_allow_html=True)
-    emp_name = st.text_input("اسم الموظف / المصور")
-    emp_role = st.text_input("الوظيفة")
-    daily_rate = st.number_input("الراتب / اليومية", min_value=0, value=150)
-    if st.button("حفظ الموظف"):
-        if emp_name:
-            try:
-                supabase.table("employees").insert({"name": emp_name, "role": emp_role, "daily_rate": daily_rate}).execute()
-                st.success("تمت إضافة الموظف!")
-            except Exception as ex:
-                st.error(f"خطأ: {ex}")
+    st.m
