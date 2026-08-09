@@ -461,4 +461,84 @@ elif st.session_state.current_screen == 'equip':
             if eq_name:
                 try:
                     supabase.table("equip").insert({"equipment_name": eq_name, "serial_number": eq_serial, "status": eq_status}).execute()
-            
+                    st.success("تم حفظ المعدة بنجاح!")
+                except Exception as e:
+                    st.error(f"خطأ في الحفظ: {e}")
+            else:
+                st.warning("يرجى إدخال اسم المعدة على الأقل.")
+
+    st.markdown("---")
+    st.subheader("سجل العهدة الحالية")
+    try:
+        eq_data = supabase.table("equip").select("*").execute().data
+        if eq_data:
+            st.dataframe(pd.DataFrame(eq_data), use_container_width=True)
+        else:
+            st.info("لا توجد معدات مسجلة في العهدة.")
+    except Exception as ex:
+        st.warning(f"ملاحظة: جدول العهدة غير متاح أو فارغ ({ex})")
+
+# ==========================================
+# 9. قسم المصروفات والنفقات
+# ==========================================
+elif st.session_state.current_screen == 'expenses':
+    st.markdown("<h3 style='color: #d4af37; text-align: center;'>المصروفات والنفقات</h3>", unsafe_allow_html=True)
+    
+    with st.form("add_expense_form"):
+        st.subheader("تسجيل مصروف جديد")
+        exp_desc = st.text_input("بيان المصروف (السبب)")
+        exp_amount = st.number_input("المبلغ (ج.م)", min_value=0.0, value=50.0, step=10.0)
+        exp_submit = st.form_submit_button("حفظ المصروف")
+        if exp_submit:
+            if exp_desc:
+                try:
+                    supabase.table("expenses").insert({"description": exp_desc, "amount": exp_amount}).execute()
+                    st.success("تم تسجيل المصروف بنجاح!")
+                except Exception as e:
+                    st.error(f"خطأ في حفظ المصروف: {e}")
+            else:
+                st.warning("يرجى كتابة بيان المصروف.")
+
+    st.markdown("---")
+    st.subheader("سجل المصروفات اليومية")
+    try:
+        exp_data = supabase.table("expenses").select("*").execute().data
+        if exp_data:
+            st.dataframe(pd.DataFrame(exp_data), use_container_width=True)
+        else:
+            st.info("لا توجد مصروفات مسجلة حتى الآن.")
+    except Exception as ex:
+        st.warning(f"ملاحظة: جدول المصروفات غير متاح أو فارغ ({ex})")
+
+# ==========================================
+# 10. قسم العمالة والحضور والسُلف
+# ==========================================
+elif st.session_state.current_screen == 'staff':
+    st.markdown("<h3 style='color: #d4af37; text-align: center;'>العمالة والحضور والسُلف</h3>", unsafe_allow_html=True)
+    
+    with st.form("add_staff_form"):
+        st.subheader("تسجيل موظف أو سُلفة جديدة")
+        st_name = st.text_input("اسم الموظف")
+        st_action = st.selectbox("نوع الحركة", ["حضور", "انصراف", "طلب سُلفة"])
+        st_amount = st.number_input("قيمة السُلفة (إن وجدت)", min_value=0.0, value=0.0, step=50.0)
+        st_submit = st.form_submit_button("حفظ حركة الموظف")
+        if st_submit:
+            if st_name:
+                try:
+                    supabase.table("staff").insert({"staff_name": st_name, "action": st_action, "amount": st_amount}).execute()
+                    st.success("تم تسجيل الحركة بنجاح!")
+                except Exception as e:
+                    st.error(f"خطأ في الحفظ: {e}")
+            else:
+                st.warning("يرجى إدخال اسم الموظف.")
+
+    st.markdown("---")
+    st.subheader("سجل العمالة والحضور")
+    try:
+        st_data = supabase.table("staff").select("*").execute().data
+        if st_data:
+            st.dataframe(pd.DataFrame(st_data), use_container_width=True)
+        else:
+            st.info("لا توجد بيانات مسجلة للعمالة.")
+    except Exception as ex:
+        st.warning(f"ملاحظة: جدول العمالة غير متاح أو فارغ ({ex})")
