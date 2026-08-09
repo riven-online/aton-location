@@ -507,4 +507,166 @@ elif st.session_state.current_screen == 'bookings':
                     <div style="font-size: 11px; font-weight: bold; color: #333; margin-top:5px;">إيصال تأكيد موعد وحجز</div>
                 </div>
                 <div class="receipt-row"><span>العميل:</span> <strong>{b_curr.get('client_name')}</strong></div>
-                <div class="receipt-row"><s
+                <div class="receipt-row"><span>الهاتف:</span> <strong>{b_curr.get('phone')}</strong></div>
+                <div class="receipt-row"><span>الباقة:</span> <strong>{b_curr.get('session_type')}</strong></div>
+                <div class="receipt-row"><span>اللوكيشن:</span> <strong>{b_curr.get('location_room')}</strong></div>
+                <div class="receipt-row"><span>التاريخ:</span> <strong>{b_curr.get('session_date')}</strong></div>
+                <div class="receipt-row"><span>الموعد:</span> <strong>من {str(b_curr.get('start_time'))[:5]} إلى {str(b_curr.get('end_time'))[:5]}</strong></div>
+                <hr style="border:0.5px dashed #444; margin:8px 0;">
+                <div class="receipt-row"><span>الإجمالي:</span> <strong>{float(b_curr.get('total_agreed', 0)):,.0f} ج.م</strong></div>
+                <div class="receipt-row"><span>العربون:</span> <strong style="color:green;">{float(b_curr.get('paid_amount', 0)):,.0f} ج.م</strong></div>
+                <div class="receipt-total receipt-row">
+                    <span>المتبقي عند الحضور:</span>
+                    <span style="color:red;">{rem_calc:,.0f} ج.م</span>
+                </div>
+            </div>
+            """
+            st.markdown(receipt_html, unsafe_allow_html=True)
+
+    with tab_cal:
+        st.subheader("تقويم استعلام المواعيد اليومية")
+        search_date = st.date_input("اختر اليوم للتحقق", value=date.today(), key="cal_search_date")
+        try:
+            all_b = supabase.table("bookings").select("*").execute().data
+            day_bookings = []
+            if all_b:
+                for b in all_b:
+                    b_d = str(b.get('session_date') or b.get('booking_date') or b.get('date') or '').split('T')[0]
+                    if b_d == str(search_date):
+                        day_bookings.append(b)
+
+            if day_bookings:
+                st.success(f"تم العثور على {len(day_bookings)} حجز في هذا التاريخ")
+                df_day = pd.DataFrame(day_bookings)
+                st.dataframe(df_day, use_container_width=True)
+            else:
+                st.info("لا توجد حجوزات مسجلة في هذا اليوم")
+        except Exception as ex:
+            st.warning(f"تعذر جلب الحجوزات: {ex}")
+
+    with tab_list:
+        st.subheader("سجل كافة الحجوزات المسجلة")
+        try:
+            res_all = supabase.table("bookings").select("*").execute().data
+            if res_all:
+                st.dataframe(pd.DataFrame(res_all), use_container_width=True)
+            else:
+                st.info("لا توجد حجوزات سابقة مسجلة في قاعدة البيانات")
+        except Exception as ex:
+            st.error(f"خطأ في جلب السجل: {ex}")
+
+# ==========================================
+# 7. التقارير والميزانية
+# ==========================================
+elif st.session_state.current_screen == 'reports':
+    st.markdown("<h3 style='color: #d4af37; text-align: center;'>التقارير والميزانية والربحية</h3>", unsafe_allow_html=True)
+    try:
+        b_res = supabase.table("bookings").select("total_agreed, paid_amount").execute()
+        t_res = supabase.table("tickets").select("total_price").execute()
+        e_res = supabase.table("expenses").select("amount").execute()
+        
+        total_b = sum([float(x.get('total_agreed', 0)) for x in b_res.data]) if b_res.data else 0
+        total_t = sum([float(x.get('total_price', 0)) for x in t_res.data]) if t_res.data else 0
+        total_exp = sum([float(x.get('amount', 0)) for x in e_res.data]) if e_res.data else 0
+        
+        c1, c2, c3 = st.columns(3)
+        c1.metric("إجمالي الحجوزات", f"{total_b:,.0f} ج.م")
+        c2.metric("إجمالي التذاكر", f"{total_t:,.0f} ج.م")
+        c3.metric("إجمالي المصروفات", f"{total_exp:,.0f} ج.م")
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        net_profit = (total_b + total_t) - total_exp
+        st.metric("صافي الإيرادات والأرباح", f"{net_profit:,.0f} ج.م")
+    except Exception as e:
+        st.error(f"خطأ في جلب بيانات التقارير: {e}")
+
+# ==========================================
+# 8. إدارة العهدة
+# ==========================================
+elif st.session_state.current_screen == 'equip':
+    st.markdown("<h3 style='color: #d4af37; text-align: center;'>إدارة العهدة والمعدات</h3>", unsafe_allow_html=True)
+    eq_name = st.text_input("اسم المعدة / الجهاز", key="eq_name_input")
+    eq_status = st.selectbox("الحالة", ["متاحة", "قيد الاستخدام", "تحت الصيانة"], key="eq_status_input")
+    
+    if st.button("إضافة معدة جديدة", key="btn_add_eq"):
+        if eq_name:
+            try:
+                supabase.table("equip").insert({"item_name": eq_name, "status": eq_status}).execute()
+                st.success("تم إضافة المعدة بنجاح!")
+                st.rerun()
+            except Exception as ex:
+                st.error(f"خطأ في الحفظ: {ex}")
+        else:
+            st.warning("يرجى إدخال اسم المعدة.")
+            
+    st.markdown("---")
+    st.subheader("قائمة العهدة الحالية")
+    try:
+        res = supabase.table("equip").select("*").execute()
+        if res.data:
+            st.dataframe(pd.DataFrame(res.data), use_container_width=True)
+        else:
+            st.info("لا توجد معدات مسجلة حالياً.")
+    except Exception as ex:
+        st.warning(f"تعذر جلب بيانات العهدة: {ex}")
+
+# ==========================================
+# 9. المصروفات والنفقات
+# ==========================================
+elif st.session_state.current_screen == 'expenses':
+    st.markdown("<h3 style='color: #d4af37; text-align: center;'>المصروفات والنفقات الإدارية</h3>", unsafe_allow_html=True)
+    exp_desc = st.text_input("بيان المصروف", key="exp_desc_input")
+    exp_amount = st.number_input("المبلغ (ج.م)", min_value=0.0, value=100.0, step=50.0, key="exp_amount_input")
+    
+    if st.button("تسجيل المصروف", key="btn_add_exp"):
+        if exp_desc:
+            try:
+                supabase.table("expenses").insert({"description": exp_desc, "amount": exp_amount}).execute()
+                st.success("تم تسجيل المصروف بنجاح!")
+                st.rerun()
+            except Exception as ex:
+                st.error(f"خطأ في الحفظ: {ex}")
+        else:
+            st.warning("يرجى إدخال بيان المصروف.")
+                
+    st.markdown("---")
+    st.subheader("سجل المصروفات")
+    try:
+        res = supabase.table("expenses").select("*").execute()
+        if res.data:
+            st.dataframe(pd.DataFrame(res.data), use_container_width=True)
+        else:
+            st.info("لا توجد مصروفات مسجلة حالياً.")
+    except Exception as ex:
+        st.warning(f"تعذر جلب بيانات المصروفات: {ex}")
+
+# ==========================================
+# 10. العمالة والسُلف
+# ==========================================
+elif st.session_state.current_screen == 'staff':
+    st.markdown("<h3 style='color: #d4af37; text-align: center;'>العمالة والحضور والسُلف</h3>", unsafe_allow_html=True)
+    st_name = st.text_input("اسم الموظف / العامل", key="st_name_input")
+    st_role = st.text_input("الوظيفة", key="st_role_input")
+    st_advance = st.number_input("قيمة السُلفة (ج.م)", min_value=0.0, value=0.0, step=50.0, key="st_advance_input")
+    
+    if st.button("حفظ الموظف", key="btn_add_staff"):
+        if st_name:
+            try:
+                supabase.table("staff").insert({"name": st_name, "role": st_role, "advance": st_advance}).execute()
+                st.success("تم الحفظ بنجاح!")
+                st.rerun()
+            except Exception as ex:
+                st.error(f"خطأ في الحفظ: {ex}")
+        else:
+            st.warning("يرجى إدخال اسم الموظف.")
+                
+    st.markdown("---")
+    st.subheader("قائمة العاملين والسُلف")
+    try:
+        res = supabase.table("staff").select("*").execute()
+        if res.data:
+            st.dataframe(pd.DataFrame(res.data), use_container_width=True)
+        else:
+            st.info("لا توجد بيانات عمالة مسجلة حالياً.")
+    except Exception as ex:
+        st.warning(f"تعذر جلب بيانات العمالة: {ex}")
