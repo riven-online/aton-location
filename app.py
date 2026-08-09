@@ -82,7 +82,7 @@ st.markdown("""
         text-align: center !important;
     }
 
-    /* تخصيص أزرار الـ Streamlit لتملأ الكارت وتصبح مخفية لكن قابلة للضغط بالكامل */
+    /* تخصيص أزرار الـ Streamlit لتملأ الكارت وتصبح قابلة للضغط بالكامل */
     .stButton>button {
         background: linear-gradient(145deg, #161b26, #0f131c) !important;
         border: 1px solid rgba(212, 175, 55, 0.4) !important;
