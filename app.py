@@ -509,7 +509,6 @@ elif st.session_state.current_screen == 'bookings':
 elif st.session_state.current_screen == 'reports':
     st.markdown("<h3 style='color: #d4af37; text-align: center;'>التقارير والميزانية</h3>", unsafe_allow_html=True)
     st.info("قسم التقارير المالية والربحية قيد العرض التفاعلي...")
-
 elif st.session_state.current_screen == 'equip':
     st.markdown("<h3 style='color: #d4af37; text-align: center;'>إدارة العهدة والمعدات</h3>", unsafe_allow_html=True)
     st.info("قسم تسجيل وتسليم المعدات والعهدة...")
