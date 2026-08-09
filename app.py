@@ -58,7 +58,6 @@ st.markdown("""
         width: 100%;
     }
     
-    /* تصميم الإيصال الحراري المخصص للطباعة */
     .invoice-box {
         max-width: 380px;
         margin: auto;
@@ -218,7 +217,6 @@ if page == "💍 حجوزات الأفراح والتقويم":
             st.subheader("📄 إيصال حجز السيشن (جاهز للطباعة)")
             rem_calc = total_agreed - paid_amount
             
-            # معاينة ريسيت آتون لوكيشن مع تحديث المتغيرات حياً
             receipt_html = f"""
             <div class="invoice-box">
                 <div class="invoice-header">
@@ -258,7 +256,6 @@ if page == "💍 حجوزات الأفراح والتقويم":
             if day_bookings:
                 st.success(f"📌 يوجد عدد **({len(day_bookings)})** سيشن محجوز في يوم {search_date}:")
                 
-                # عرض الحجوزات كبطاقات مواعيد
                 for idx, b in enumerate(day_bookings, 1):
                     s_t = b.get('start_time', 'غير محدد')[:5]
                     e_t = b.get('end_time', 'غير محدد')[:5]
@@ -429,4 +426,48 @@ elif page == "📷 عهدة ومعدات التصوير":
                         "assigned_to": assigned_to if status_choice == "خارجة لسيشن خارجي" else "",
                         "expected_return": expected_return if status_choice == "خارجة لسيشن خارجي" else ""
                     }).eq("id", selected_eq_id).execute()
-                    st.success("تم تحديث 
+                    st.success("تم تحديث حالة المعدة بنجاح!")
+                    st.rerun()
+
+                st.divider()
+                st.dataframe(eq_df[['name', 'category', 'status', 'assigned_to', 'expected_return']], use_container_width=True)
+            else:
+                st.info("لا توجد معدات مسجلة بعد.")
+        except Exception as ex:
+            st.error(f"خطأ أثناء التحميل: {ex}")
+
+# ==========================================
+# الصفحة 5: المصروفات العامة
+# ==========================================
+elif page == "💸 المصروفات والنفقات":
+    st.markdown("<h2 style='color: #d4af37;'>💸 تسجيل المصروفات والتكاليف</h2>", unsafe_allow_html=True)
+    with st.form("exp_form", clear_on_submit=True):
+        category = st.selectbox("بند المصروف", ["إيجار", "كهرباء ومرافق", "مشتريات كافيه وبضاعة", "صيانة", "نثريات"])
+        amount = st.number_input("المبلغ (ج.م)", min_value=1, value=50)
+        description = st.text_area("تفاصيل المصروف")
+        if st.form_submit_button("تسجيل الصرف"):
+            try:
+                supabase.table("expenses").insert({
+                    "category": category,
+                    "amount": amount,
+                    "description": description
+                }).execute()
+                st.success("تم تسجيل المصروف بنجاح!")
+            except Exception as ex:
+                st.error(f"خطأ: {ex}")
+
+# ==========================================
+# الصفحة 6: شؤون الموظفين والسُلف
+# ==========================================
+elif page == "👥 العمالة والسُلف":
+    st.markdown("<h2 style='color: #d4af37;'>👥 إدارة طاقم العمل والسُلف</h2>", unsafe_allow_html=True)
+    emp_name = st.text_input("اسم الموظف / المصور")
+    emp_role = st.text_input("الوظيفة")
+    daily_rate = st.number_input("الراتب / اليومية", min_value=0, value=150)
+    if st.button("حفظ الموظف"):
+        if emp_name:
+            try:
+                supabase.table("employees").insert({"name": emp_name, "role": emp_role, "daily_rate": daily_rate}).execute()
+                st.success("تمت إضافة الموظف!")
+            except Exception as ex:
+                st.error(f"خطأ: {ex}")
