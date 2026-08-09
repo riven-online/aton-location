@@ -4,6 +4,15 @@ from supabase import create_client, Client
 from datetime import datetime, time, date
 
 # ==========================================
+# 0. بطاقة الذاكرة الدائمة (استخدمها عند فتح شات جديد لاحقاً)
+# ==========================================
+"""
+مشروع: آتون لوكيشن | Aton Location POS
+جداول Supabase المستخدمة: tickets, bookings, equipment, expenses, staff
+الحالة العامة (Session States): current_screen, last_ticket, last_booking
+"""
+
+# ==========================================
 # 1. تهيئة الصفحة والأنماط البصرية الحديثة
 # ==========================================
 st.set_page_config(
@@ -33,35 +42,19 @@ st.markdown("""
         color: #f8fafc;
     }
     
-    .stApp {
-        background-color: #0b0d12;
-    }
+    .stApp { background-color: #0b0d12; }
 
     /* إخفاء القائمة الجانبية تماماً وأزرار التحكم بها */
-    [data-testid="stSidebar"] {
-        display: none !important;
-    }
-    [data-testid="collapsedControl"] {
+    [data-testid="stSidebar"], [data-testid="collapsedControl"] {
         display: none !important;
     }
     
-    /* تأثير النيون الذهبي الهادئ المتحرك */
     @keyframes goldNeonGlow {
-        0% {
-            text-shadow: 0 0 5px rgba(212, 175, 55, 0.4), 0 0 10px rgba(212, 175, 55, 0.2);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(212, 175, 55, 0.15);
-        }
-        50% {
-            text-shadow: 0 0 15px rgba(212, 175, 55, 0.8), 0 0 25px rgba(212, 175, 55, 0.5), 0 0 35px rgba(212, 175, 55, 0.3);
-            box-shadow: 0 8px 35px rgba(212, 175, 55, 0.3), inset 0 0 25px rgba(212, 175, 55, 0.3);
-        }
-        100% {
-            text-shadow: 0 0 5px rgba(212, 175, 55, 0.4), 0 0 10px rgba(212, 175, 55, 0.2);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(212, 175, 55, 0.15);
-        }
+        0% { text-shadow: 0 0 5px rgba(212, 175, 55, 0.4); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6); }
+        50% { text-shadow: 0 0 15px rgba(212, 175, 55, 0.8); box-shadow: 0 8px 35px rgba(212, 175, 55, 0.3); }
+        100% { text-shadow: 0 0 5px rgba(212, 175, 55, 0.4); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6); }
     }
 
-    /* شريط الرأس المعنون والموسع في منتصف الصفحة */
     .pos-header-center {
         background: linear-gradient(135deg, #141824 0%, #0d1017 100%);
         border: 2px solid #d4af37;
@@ -79,10 +72,8 @@ st.markdown("""
         color: #fce181;
         letter-spacing: 2px;
         margin: 0;
-        text-align: center !important;
     }
 
-    /* تصميم الكروت والأيقونات المضيئة الفاخرة */
     .pos-card-container {
         background: linear-gradient(145deg, #161b26, #0f131c);
         border: 1px solid rgba(212, 175, 55, 0.35);
@@ -96,12 +87,6 @@ st.markdown("""
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        transition: all 0.3s ease;
-    }
-    .pos-card-container:hover {
-        border-color: #d4af37;
-        box-shadow: 0 12px 35px rgba(212, 175, 55, 0.2);
-        transform: translateY(-3px);
     }
     
     .card-icon-circle {
@@ -114,53 +99,23 @@ st.markdown("""
         align-items: center;
         justify-content: center;
         margin-bottom: 12px;
-        box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
     }
-    .card-icon-circle i {
-        font-size: 20px;
-        color: #fce181;
-    }
+    .card-icon-circle i { font-size: 20px; color: #fce181; }
 
-    .pos-card-title {
-        color: #ffffff;
-        font-size: 18px;
-        font-weight: 800;
-        margin-bottom: 6px;
-    }
-    .pos-card-desc {
-        color: #94a3b8;
-        font-size: 12px;
-        margin: 0;
-    }
+    .pos-card-title { color: #ffffff; font-size: 18px; font-weight: 800; margin-bottom: 6px; }
+    .pos-card-desc { color: #94a3b8; font-size: 12px; margin: 0; }
 
-    /* توسيط أزرار الـ Streamlit باحترافية تحت كل كارت */
-    .stButton {
-        display: flex;
-        justify-content: center;
-        width: 100%;
-    }
-    
     .stButton>button {
         background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%) !important;
         color: #000000 !important;
         font-weight: 800 !important;
-        font-size: 14px !important;
-        border: none !important;
         border-radius: 12px !important;
         padding: 10px 15px !important;
         width: 100% !important;
         max-width: 200px !important;
         margin: 0 auto !important;
-        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    
-    .stButton>button:hover {
-        transform: scale(1.02);
-        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
     }
 
-    /* تصميم الإيصال الطباعي */
     .receipt-container {
         max-width: 340px;
         margin: auto;
@@ -168,51 +123,13 @@ st.markdown("""
         background-color: #ffffff;
         color: #000000;
         border-radius: 8px;
-        font-family: 'Cairo', sans-serif;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
         border-top: 5px solid #d4af37;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
     }
-    .receipt-header {
-        text-align: center;
-        border-bottom: 2px dashed #222;
-        padding-bottom: 12px;
-        margin-bottom: 12px;
-    }
-    .receipt-title {
-        font-size: 22px;
-        font-weight: 900;
-        color: #000000;
-        margin: 0;
-    }
-    .receipt-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 8px;
-        font-size: 13px;
-        color: #111111;
-    }
-    .receipt-total {
-        border-top: 2px dashed #222;
-        padding-top: 10px;
-        margin-top: 12px;
-        font-size: 16px;
-        font-weight: 800;
-    }
-
-    @media print {
-        body * {
-            visibility: hidden;
-        }
-        .receipt-container, .receipt-container * {
-            visibility: visible;
-        }
-        .receipt-container {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-        }
-    }
+    .receipt-header { text-align: center; border-bottom: 2px dashed #222; padding-bottom: 12px; margin-bottom: 12px; }
+    .receipt-title { font-size: 22px; font-weight: 900; margin: 0; }
+    .receipt-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: #111; }
+    .receipt-total { border-top: 2px dashed #222; padding-top: 10px; margin-top: 12px; font-size: 16px; font-weight: 800; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -228,7 +145,7 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# 3. الهيدر العلوي الموحد مع تأثير النيون الذهبي المتبادل
+# 3. الهيدر العلوي الموحد
 # ==========================================
 st.markdown("""
 <div class="pos-header-center">
@@ -246,7 +163,7 @@ if st.session_state.current_screen != 'dashboard':
 st.divider()
 
 # ==========================================
-# 4. الشاشة الرئيسية (Dashboard - Grid Layout with Gorgeous Icons)
+# 4. الشاشة الرئيسية (Dashboard)
 # ==========================================
 if st.session_state.current_screen == 'dashboard':
     st.markdown("<h3 style='text-align: center; color: #d4af37; margin-bottom: 25px;'>اختر القسم المطلوب للبدء</h3>", unsafe_allow_html=True)
@@ -278,7 +195,6 @@ if st.session_state.current_screen == 'dashboard':
             st.rerun()
 
     st.markdown("<br>", unsafe_allow_html=True)
-
     col3, col4, col5, col6 = st.columns(4, gap="medium")
     
     with col3:
@@ -330,15 +246,13 @@ if st.session_state.current_screen == 'dashboard':
             st.rerun()
 
 # ==========================================
-# 5. قسم كاشير تذاكر الأفراد
+# 5. شاشة تذاكر الأفراد
 # ==========================================
 elif st.session_state.current_screen == 'tickets':
     st.markdown("<h3 style='color: #d4af37; text-align: center;'>قطع تذاكر دخول الأفراد</h3>", unsafe_allow_html=True)
-    
     col_in, col_print = st.columns([1.1, 1], gap="large")
     
     with col_in:
-        st.subheader("بيانات التذكرة")
         count = st.number_input("عدد الأفراد", min_value=1, value=1, step=1, key="pos_t_count")
         price_per_ticket = st.number_input("سعر التذكرة للفرد (ج.م)", min_value=1, value=50, step=10, key="pos_t_price")
         total_price = count * price_per_ticket
@@ -354,41 +268,22 @@ elif st.session_state.current_screen == 'tickets':
         with btn_c1:
             if st.button("تأكيد وحفظ وطباعة"):
                 try:
-                    supabase.table("tickets").insert({
-                        "count": count,
-                        "price_per_ticket": price_per_ticket,
-                        "total_price": total_price
-                    }).execute()
-                    
-                    st.session_state.last_ticket = {
-                        "time": datetime.now().strftime('%Y-%m-%d %H:%M'),
-                        "count": count,
-                        "price": price_per_ticket,
-                        "total": total_price
-                    }
+                    supabase.table("tickets").insert({"count": count, "price_per_ticket": price_per_ticket, "total_price": total_price}).execute()
+                    st.session_state.last_ticket = {"time": datetime.now().strftime('%Y-%m-%d %H:%M'), "count": count, "price": price_per_ticket, "total": total_price}
                     st.success("تم الحفظ بنجاح! جاري طلب الطباعة...")
                     st.markdown("<script>window.print();</script>", unsafe_allow_html=True)
                 except Exception as ex:
                     st.error(f"خطأ في العملية: {ex}")
-
         with btn_c2:
             if st.button("إعادة الطباعة"):
                 if st.session_state.last_ticket:
-                    st.info("جاري إعادة طباعة آخر تذكرة...")
                     st.markdown("<script>window.print();</script>", unsafe_allow_html=True)
                 else:
                     st.warning("لا توجد تذكرة سابقة.")
 
     with col_print:
-        st.subheader("معاينة الإيصال للطباعة")
-        t_data = st.session_state.last_ticket if st.session_state.last_ticket else {
-            "time": datetime.now().strftime('%Y-%m-%d %H:%M'),
-            "count": count,
-            "price": price_per_ticket,
-            "total": total_price
-        }
-        
-        receipt_html = f"""
+        t_data = st.session_state.last_ticket if st.session_state.last_ticket else {"time": datetime.now().strftime('%Y-%m-%d %H:%M'), "count": count, "price": price_per_ticket, "total": total_price}
+        st.markdown(f"""
         <div class="receipt-container">
             <div class="receipt-header">
                 <div class="receipt-title">آتون لوكيشن</div>
@@ -397,39 +292,23 @@ elif st.session_state.current_screen == 'tickets':
             <div class="receipt-row"><span>التاريخ والوقت:</span> <strong>{t_data['time']}</strong></div>
             <div class="receipt-row"><span>عدد الأفراد:</span> <strong>{t_data['count']} فرد</strong></div>
             <div class="receipt-row"><span>سعر الفرد:</span> <strong>{t_data['price']:,.0f} ج.م</strong></div>
-            <hr style="border:0.5px dashed #444; margin:8px 0;">
-            <div class="receipt-total receipt-row">
-                <span>الإجمالي المدفوع:</span>
-                <span>{t_data['total']:,.0f} ج.م</span>
-            </div>
-            <div style="text-align:center; font-size:10px; color:#555; margin-top:15px; font-weight:bold;">
-                شكراً لزيارتكم آتون لوكيشن
-            </div>
+            <div class="receipt-total receipt-row"><span>الإجمالي:</span> <span>{t_data['total']:,.0f} ج.م</span></div>
         </div>
-        """
-        st.markdown(receipt_html, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
 # ==========================================
-# 6. قسم حجوزات الأفراح والتقويم
+# 6. شاشة الحجوزات
 # ==========================================
 elif st.session_state.current_screen == 'bookings':
     st.markdown("<h3 style='color: #d4af37; text-align: center;'>حجز سيشن وتقويم المواعيد</h3>", unsafe_allow_html=True)
-    
     tab_new, tab_cal, tab_list = st.tabs(["حجز جديد وإيصال", "تقويم الاستعلام", "سجل الحجوزات"])
 
     with tab_new:
         col_b_input, col_b_print = st.columns([1.2, 1], gap="large")
-        
         with col_b_input:
             client_name = st.text_input("اسم العريس / العروسة", key="b_cname")
             phone = st.text_input("رقم الهاتف", key="b_phone")
-            
-            session_type = st.selectbox(
-                "نوع الجلسة / الباقة", 
-                ["سيشن عادي", "سيشن مميز", "باقة الفرح الكامل", "فوتوسيشن خارجي", "تخصيص يدوي"],
-                key="b_stype"
-            )
-            
+            session_type = st.selectbox("نوع الجلسة / الباقة", ["سيشن عادي", "سيشن مميز", "باقة الفرح الكامل", "فوتوسيشن خارجي"], key="b_stype")
             c1, c2 = st.columns(2)
             with c1:
                 session_date = st.date_input("تاريخ السيشن", value=date.today(), key="b_sdate")
@@ -440,233 +319,86 @@ elif st.session_state.current_screen == 'bookings':
                 total_agreed = st.number_input("إجمالي الاتفاق (ج.م)", min_value=0, value=600, step=50, key="b_stotal")
                 paid_amount = st.number_input("العربون المدفوع (ج.م)", min_value=0, value=200, step=50, key="b_spaid")
 
-            photographer_commission = st.number_input("عمولة المصور", min_value=0, value=0, step=50, key="b_scomm")
-            notes = st.text_area("ملاحظات", key="b_snotes")
-
-            b_btn1, b_btn2 = st.columns(2)
-            with b_btn1:
-                if st.button("تأكيد وطباعة"):
-                    if not client_name:
-                        st.warning("يرجى إدخال اسم العميل أولاً.")
-                    else:
-                        payload = {
-                            "client_name": client_name,
-                            "phone": phone,
-                            "session_date": str(session_date),
-                            "session_type": session_type,
-                            "total_agreed": total_agreed,
-                            "paid_amount": paid_amount,
-                            "start_time": str(start_t),
-                            "end_time": str(end_t),
-                            "location_room": location_room,
-                            "photographer_commission": photographer_commission,
-                            "notes": notes
-                        }
-                        try:
-                            supabase.table("bookings").insert(payload).execute()
-                            st.session_state.last_booking = payload
-                            st.success("تم الحفظ بنجاح! جاري فتح الطباعة...")
-                            st.markdown("<script>window.print();</script>", unsafe_allow_html=True)
-                        except Exception as ex:
-                            try:
-                                payload["booking_date"] = payload.pop("session_date")
-                                supabase.table("bookings").insert(payload).execute()
-                                st.session_state.last_booking = payload
-                                st.success("تم الحفظ بنجاح! جاري فتح الطباعة...")
-                                st.markdown("<script>window.print();</script>", unsafe_allow_html=True)
-                            except Exception as ex2:
-                                st.error(f"خطأ في الحفظ: {ex2}")
-
-            with b_btn2:
-                if st.button("إعادة طباعة"):
-                    if st.session_state.last_booking:
-                        st.info("جاري إعادة طباعة العقد الأخير...")
+            if st.button("تأكيد وطباعة الحجز"):
+                if client_name:
+                    payload = {"client_name": client_name, "phone": phone, "session_date": str(session_date), "session_type": session_type, "total_agreed": total_agreed, "paid_amount": paid_amount, "start_time": str(start_t), "end_time": str(end_t), "location_room": location_room}
+                    try:
+                        supabase.table("bookings").insert(payload).execute()
+                        st.session_state.last_booking = payload
+                        st.success("تم الحفظ بنجاح!")
                         st.markdown("<script>window.print();</script>", unsafe_allow_html=True)
-                    else:
-                        st.warning("لا يوجد عقد محجوز مؤخراً.")
+                    except Exception as ex:
+                        st.error(f"خطأ: {ex}")
+                else:
+                    st.warning("أدخل اسم العميل.")
 
         with col_b_print:
-            st.subheader("معاينة عقد الحجز")
-            b_curr = st.session_state.last_booking if st.session_state.last_booking else {
-                "client_name": client_name if client_name else '...................',
-                "phone": phone if phone else '...................',
-                "session_type": session_type,
-                "location_room": location_room,
-                "session_date": str(session_date),
-                "start_time": str(start_t),
-                "end_time": str(end_t),
-                "total_agreed": total_agreed,
-                "paid_amount": paid_amount
-            }
+            b_curr = st.session_state.last_booking if st.session_state.last_booking else {"client_name": '...', "phone": '...', "session_type": session_type, "location_room": location_room, "session_date": str(session_date), "start_time": str(start_t), "end_time": str(end_t), "total_agreed": total_agreed, "paid_amount": paid_amount}
             rem_calc = float(b_curr.get("total_agreed", 0)) - float(b_curr.get("paid_amount", 0))
-            
-            receipt_html = f"""
+            st.markdown(f"""
             <div class="receipt-container">
-                <div class="receipt-header">
-                    <div class="receipt-title">آتون لوكيشن</div>
-                    <div style="font-size: 11px; font-weight: bold; color: #333; margin-top:5px;">إيصال تأكيد موعد وحجز</div>
-                </div>
+                <div class="receipt-header"><div class="receipt-title">آتون لوكيشن</div></div>
                 <div class="receipt-row"><span>العميل:</span> <strong>{b_curr.get('client_name')}</strong></div>
-                <div class="receipt-row"><span>الهاتف:</span> <strong>{b_curr.get('phone')}</strong></div>
-                <div class="receipt-row"><span>الباقة:</span> <strong>{b_curr.get('session_type')}</strong></div>
-                <div class="receipt-row"><span>اللوكيشن:</span> <strong>{b_curr.get('location_room')}</strong></div>
                 <div class="receipt-row"><span>التاريخ:</span> <strong>{b_curr.get('session_date')}</strong></div>
-                <div class="receipt-row"><span>الموعد:</span> <strong>من {str(b_curr.get('start_time'))[:5]} إلى {str(b_curr.get('end_time'))[:5]}</strong></div>
-                <hr style="border:0.5px dashed #444; margin:8px 0;">
-                <div class="receipt-row"><span>الإجمالي:</span> <strong>{float(b_curr.get('total_agreed', 0)):,.0f} ج.م</strong></div>
-                <div class="receipt-row"><span>العربون:</span> <strong style="color:green;">{float(b_curr.get('paid_amount', 0)):,.0f} ج.م</strong></div>
-                <div class="receipt-total receipt-row">
-                    <span>المتبقي عند الحضور:</span>
-                    <span style="color:red;">{rem_calc:,.0f} ج.م</span>
-                </div>
+                <div class="receipt-row"><span>المتبقي:</span> <strong style="color:red;">{rem_calc:,.0f} ج.م</strong></div>
             </div>
-            """
-            st.markdown(receipt_html, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
     with tab_cal:
-        st.subheader("تقويم استعلام المواعيد اليومية")
-        search_date = st.date_input("اختر اليوم للتحقق", value=date.today(), key="cal_search_date")
+        st.subheader("تقويم المواعيد")
         try:
-            all_b = supabase.table("bookings").select("*").execute().data
-            day_bookings = []
-            if all_b:
-                for b in all_b:
-                    b_d = str(b.get('session_date') or b.get('booking_date') or b.get('date') or '').split('T')[0]
-                    if b_d == str(search_date):
-                        day_bookings.append(b)
-
-            if day_bookings:
-                st.success(f"تم العثور على {len(day_bookings)} حجز في هذا التاريخ")
-                df_day = pd.DataFrame(day_bookings)
-                st.dataframe(df_day, use_container_width=True)
-            else:
-                st.info("لا توجد حجوزات مسجلة في هذا اليوم")
-        except Exception as ex:
-            st.warning(f"تعذر جلب الحجوزات: {ex}")
+            res_cal = supabase.table("bookings").select("*").execute()
+            if res_cal.data:
+                df_b = pd.DataFrame(res_cal.data)
+                sel_cal_date = st.date_input("اختر تاريخاً", value=date.today(), key="cal_filter_date")
+                df_b['session_date'] = pd.to_datetime(df_b['session_date']).dt.date
+                day_bookings = df_b[df_b['session_date'] == sel_cal_date]
+                if not day_bookings.empty:
+                    st.dataframe(day_bookings, use_container_width=True)
+                else:
+                    st.info("لا توجد حجوزات في هذا اليوم.")
+        except Exception as e:
+            st.info("لا توجد بيانات كافية للتقويم.")
 
     with tab_list:
-        st.subheader("سجل كافة الحجوزات المسجلة")
         try:
-            res_all = supabase.table("bookings").select("*").execute().data
-            if res_all:
-                st.dataframe(pd.DataFrame(res_all), use_container_width=True)
-            else:
-                st.info("لا توجد حجوزات سابقة مسجلة في قاعدة البيانات")
-        except Exception as ex:
-            st.error(f"خطأ في جلب السجل: {ex}")
+            st.dataframe(pd.DataFrame(supabase.table("bookings").select("*").execute().data), use_container_width=True)
+        except Exception:
+            st.info("لا توجد سجلات.")
 
 # ==========================================
-# 7. التقارير والميزانية
+# 7, 8, 9, 10. التقارير، العهدة، المصروفات، والعمالة
 # ==========================================
 elif st.session_state.current_screen == 'reports':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>التقارير والميزانية والربحية</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #d4af37; text-align: center;'>التقارير المالية</h3>", unsafe_allow_html=True)
     try:
-        b_res = supabase.table("bookings").select("total_agreed, paid_amount").execute()
-        t_res = supabase.table("tickets").select("total_price").execute()
-        e_res = supabase.table("expenses").select("amount").execute()
-        
-        total_b = sum([float(x.get('total_agreed', 0)) for x in b_res.data]) if b_res.data else 0
-        total_t = sum([float(x.get('total_price', 0)) for x in t_res.data]) if t_res.data else 0
-        total_exp = sum([float(x.get('amount', 0)) for x in e_res.data]) if e_res.data else 0
-        
-        c1, c2, c3 = st.columns(3)
-        c1.metric("إجمالي الحجوزات", f"{total_b:,.0f} ج.م")
-        c2.metric("إجمالي التذاكر", f"{total_t:,.0f} ج.م")
-        c3.metric("إجمالي المصروفات", f"{total_exp:,.0f} ج.م")
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        net_profit = (total_b + total_t) - total_exp
-        st.metric("صافي الإيرادات والأرباح", f"{net_profit:,.0f} ج.م")
-    except Exception as e:
-        st.error(f"خطأ في جلب بيانات التقارير: {e}")
+        t_rev = sum([float(x.get('total_price', 0)) for x in supabase.table("tickets").select("total_price").execute().data])
+        b_rev = sum([float(x.get('paid_amount', 0)) for x in supabase.table("bookings").select("paid_amount").execute().data])
+        st.metric("إجمالي الإيرادات", f"{t_rev + b_rev:,.0f} ج.م")
+    except Exception:
+        st.metric("إجمالي الإيرادات", "0 ج.م")
 
-# ==========================================
-# 8. إدارة العهدة
-# ==========================================
 elif st.session_state.current_screen == 'equip':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>إدارة العهدة والمعدات</h3>", unsafe_allow_html=True)
-    eq_name = st.text_input("اسم المعدة / الجهاز", key="eq_name_input")
-    eq_status = st.selectbox("الحالة", ["متاحة", "قيد الاستخدام", "تحت الصيانة"], key="eq_status_input")
-    
-    if st.button("إضافة معدة جديدة", key="btn_add_eq"):
+    st.markdown("<h3 style='color: #d4af37; text-align: center;'>إدارة العهدة</h3>", unsafe_allow_html=True)
+    eq_name = st.text_input("اسم المعدة")
+    if st.button("إضافة معدة"):
         if eq_name:
-            try:
-                supabase.table("equip").insert({"item_name": eq_name, "status": eq_status}).execute()
-                st.success("تم إضافة المعدة بنجاح!")
-                st.rerun()
-            except Exception as ex:
-                st.error(f"خطأ في الحفظ: {ex}")
-        else:
-            st.warning("يرجى إدخال اسم المعدة.")
-            
-    st.markdown("---")
-    st.subheader("قائمة العهدة الحالية")
-    try:
-        res = supabase.table("equip").select("*").execute()
-        if res.data:
-            st.dataframe(pd.DataFrame(res.data), use_container_width=True)
-        else:
-            st.info("لا توجد معدات مسجلة حالياً.")
-    except Exception as ex:
-        st.warning(f"تعذر جلب بيانات العهدة: {ex}")
+            supabase.table("equipment").insert({"name": eq_name, "status": "سليمة"}).execute()
+            st.success("تمت الإضافة!")
 
-# ==========================================
-# 9. المصروفات والنفقات
-# ==========================================
 elif st.session_state.current_screen == 'expenses':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>المصروفات والنفقات الإدارية</h3>", unsafe_allow_html=True)
-    exp_desc = st.text_input("بيان المصروف", key="exp_desc_input")
-    exp_amount = st.number_input("المبلغ (ج.م)", min_value=0.0, value=100.0, step=50.0, key="exp_amount_input")
-    
-    if st.button("تسجيل المصروف", key="btn_add_exp"):
-        if exp_desc:
-            try:
-                supabase.table("expenses").insert({"description": exp_desc, "amount": exp_amount}).execute()
-                st.success("تم تسجيل المصروف بنجاح!")
-                st.rerun()
-            except Exception as ex:
-                st.error(f"خطأ في الحفظ: {ex}")
-        else:
-            st.warning("يرجى إدخال بيان المصروف.")
-                
-    st.markdown("---")
-    st.subheader("سجل المصروفات")
-    try:
-        res = supabase.table("expenses").select("*").execute()
-        if res.data:
-            st.dataframe(pd.DataFrame(res.data), use_container_width=True)
-        else:
-            st.info("لا توجد مصروفات مسجلة حالياً.")
-    except Exception as ex:
-        st.warning(f"تعذر جلب بيانات المصروفات: {ex}")
+    st.markdown("<h3 style='color: #d4af37; text-align: center;'>المصروفات</h3>", unsafe_allow_html=True)
+    exp_title = st.text_input("بند المصروف")
+    exp_amount = st.number_input("المبلغ", min_value=0.0)
+    if st.button("حفظ المصروف"):
+        if exp_title:
+            supabase.table("expenses").insert({"title": exp_title, "amount": exp_amount}).execute()
+            st.success("تم الحفظ!")
 
-# ==========================================
-# 10. العمالة والسُلف
-# ==========================================
 elif st.session_state.current_screen == 'staff':
-    st.markdown("<h3 style='color: #d4af37; text-align: center;'>العمالة والحضور والسُلف</h3>", unsafe_allow_html=True)
-    st_name = st.text_input("اسم الموظف / العامل", key="st_name_input")
-    st_role = st.text_input("الوظيفة", key="st_role_input")
-    st_advance = st.number_input("قيمة السُلفة (ج.م)", min_value=0.0, value=0.0, step=50.0, key="st_advance_input")
-    
-    if st.button("حفظ الموظف", key="btn_add_staff"):
+    st.markdown("<h3 style='color: #d4af37; text-align: center;'>إدارة العمالة</h3>", unsafe_allow_html=True)
+    st_name = st.text_input("اسم الموظف")
+    if st.button("إضافة موظف"):
         if st_name:
-            try:
-                supabase.table("staff").insert({"name": st_name, "role": st_role, "advance": st_advance}).execute()
-                st.success("تم الحفظ بنجاح!")
-                st.rerun()
-            except Exception as ex:
-                st.error(f"خطأ في الحفظ: {ex}")
-        else:
-            st.warning("يرجى إدخال اسم الموظف.")
-                
-    st.markdown("---")
-    st.subheader("قائمة العاملين والسُلف")
-    try:
-        res = supabase.table("staff").select("*").execute()
-        if res.data:
-            st.dataframe(pd.DataFrame(res.data), use_container_width=True)
-        else:
-            st.info("لا توجد بيانات عمالة مسجلة حالياً.")
-    except Exception as ex:
-        st.warning(f"تعذر جلب بيانات العمالة: {ex}")
+            supabase.table("staff").insert({"name": st_name}).execute()
+            st.success("تمت الإضافة!")
