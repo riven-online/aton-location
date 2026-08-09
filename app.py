@@ -37,15 +37,10 @@ st.markdown("""
         background-color: #0b0d12;
     }
 
-    /* إخفاء القائمة الجانبية تماماً وأزرار التحكم بها */
-    [data-testid="stSidebar"] {
-        display: none !important;
-    }
-    [data-testid="collapsedControl"] {
+    [data-testid="stSidebar"], [data-testid="collapsedControl"] {
         display: none !important;
     }
     
-    /* تأثير النيون الذهبي الهادئ المتحرك */
     @keyframes goldNeonGlow {
         0% {
             text-shadow: 0 0 5px rgba(212, 175, 55, 0.4), 0 0 10px rgba(212, 175, 55, 0.2);
@@ -61,7 +56,6 @@ st.markdown("""
         }
     }
 
-    /* شريط الرأس المعنون والموسع في منتصف الصفحة */
     .pos-header-center {
         background: linear-gradient(135deg, #141824 0%, #0d1017 100%);
         border: 2px solid #d4af37;
@@ -82,7 +76,6 @@ st.markdown("""
         text-align: center !important;
     }
 
-    /* تصميم الكروت والأيقونات المضيئة الفاخرة */
     .pos-card-container {
         background: linear-gradient(145deg, #161b26, #0f131c);
         border: 1px solid rgba(212, 175, 55, 0.35);
@@ -133,7 +126,6 @@ st.markdown("""
         margin: 0;
     }
 
-    /* توسيط أزرار الـ Streamlit باحترافية تحت كل كارت */
     .stButton {
         display: flex;
         justify-content: center;
@@ -160,7 +152,6 @@ st.markdown("""
         box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
     }
 
-    /* تصميم الإيصال الطباعي */
     .receipt-container {
         max-width: 340px;
         margin: auto;
@@ -198,21 +189,6 @@ st.markdown("""
         font-size: 16px;
         font-weight: 800;
     }
-
-    @media print {
-        body * {
-            visibility: hidden;
-        }
-        .receipt-container, .receipt-container * {
-            visibility: visible;
-        }
-        .receipt-container {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-        }
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -228,13 +204,27 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# 3. الهيدر العلوي الموحد مع تأثير النيون الذهبي المتبادل
+# 3. الهيدر العلوي الموحد
 # ==========================================
 st.markdown("""
 <div class="pos-header-center">
     <div class="pos-title-center">آتون لوكيشن | ATON LOCATION</div>
 </div>
 """, unsafe_allow_html=True)
+
+# ------------------------------------------
+# أداة فحص وحفظ بيانات Supabase (للتأكد أن الاتصال سليم)
+# ------------------------------------------
+with st.expander("🛠️ فحص حالة اتصال سوبابيز (Supabase Connection Status)"):
+    if st.button("فحص جداول البيانات الآن"):
+        try:
+            test_t = supabase.table("tickets").select("id", count="exact").limit(1).execute()
+            test_b = supabase.table("bookings").select("id", count="exact").limit(1).execute()
+            st.success(f"✅ الاتصال بقاعدة البيانات سليم 100%!")
+            st.info(f"📊 عدد السجلات في جدول التذاكر: {test_t.count if hasattr(test_t, 'count') else 'متاح'}")
+            st.info(f"📅 عدد السجلات في جدول الحجوزات: {test_b.count if hasattr(test_b, 'count') else 'متاح'}")
+        except Exception as conn_err:
+            st.error(f"❌ حدث خطأ أثناء الاتصال بالجداول، تأكد من إنشاء جدولين باسم `tickets` و `bookings` في سوبابيز: {conn_err}")
 
 if st.session_state.current_screen != 'dashboard':
     c_back1, c_back2, c_back3 = st.columns([1, 2, 1])
@@ -246,12 +236,11 @@ if st.session_state.current_screen != 'dashboard':
 st.divider()
 
 # ==========================================
-# 4. الشاشة الرئيسية (Dashboard - Grid Layout with Gorgeous Icons)
+# 4. الشاشة الرئيسية
 # ==========================================
 if st.session_state.current_screen == 'dashboard':
     st.markdown("<h3 style='text-align: center; color: #d4af37; margin-bottom: 25px;'>اختر القسم المطلوب للبدء</h3>", unsafe_allow_html=True)
     
-    # الصف الأول: الحجوزات والتذاكر
     col1, col2 = st.columns(2, gap="large")
     
     with col1:
@@ -280,7 +269,6 @@ if st.session_state.current_screen == 'dashboard':
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # الصف الثاني: الخدمات والأقسام الفرعية (4 أعمدة)
     col3, col4, col5, col6 = st.columns(4, gap="medium")
     
     with col3:
@@ -368,16 +356,14 @@ elif st.session_state.current_screen == 'tickets':
                         "price": price_per_ticket,
                         "total": total_price
                     }
-                    st.success("تم الحفظ بنجاح! جاري طلب الطباعة...")
-                    st.markdown("<script>window.print();</script>", unsafe_allow_html=True)
+                    st.success("تم الحفظ في قاعدة البيانات بنجاح!")
                 except Exception as ex:
-                    st.error(f"خطأ في العملية: {ex}")
+                    st.error(f"خطأ في الحفظ بقاعدة البيانات: {ex}")
 
         with btn_c2:
             if st.button("إعادة الطباعة"):
                 if st.session_state.last_ticket:
                     st.info("جاري إعادة طباعة آخر تذكرة...")
-                    st.markdown("<script>window.print();</script>", unsafe_allow_html=True)
                 else:
                     st.warning("لا توجد تذكرة سابقة.")
 
@@ -467,23 +453,20 @@ elif st.session_state.current_screen == 'bookings':
                         try:
                             supabase.table("bookings").insert(payload).execute()
                             st.session_state.last_booking = payload
-                            st.success("تم الحفظ بنجاح! جاري فتح الطباعة...")
-                            st.markdown("<script>window.print();</script>", unsafe_allow_html=True)
+                            st.success("تم حفظ الحجز في سوبابيز بنجاح!")
                         except Exception as ex:
                             try:
                                 payload["booking_date"] = payload.pop("session_date")
                                 supabase.table("bookings").insert(payload).execute()
                                 st.session_state.last_booking = payload
-                                st.success("تم الحفظ بنجاح! جاري فتح الطباعة...")
-                                st.markdown("<script>window.print();</script>", unsafe_allow_html=True)
+                                st.success("تم حفظ الحجز في سوبابيز بنجاح!")
                             except Exception as ex2:
-                                st.error(f"خطأ في الحفظ: {ex2}")
+                                st.error(f"خطأ في الحفظ بقاعدة البيانات: {ex2}")
 
             with b_btn2:
                 if st.button("إعادة طباعة"):
                     if st.session_state.last_booking:
                         st.info("جاري إعادة طباعة العقد الأخير...")
-                        st.markdown("<script>window.print();</script>", unsafe_allow_html=True)
                     else:
                         st.warning("لا يوجد عقد محجوز مؤخراً.")
 
@@ -526,7 +509,7 @@ elif st.session_state.current_screen == 'bookings':
             st.markdown(receipt_html, unsafe_allow_html=True)
 
     with tab_cal:
-        st.subheader("تقويم استعلام المواعيد اليومية")
+        st.subheader("تقويم استعلام المواعيد اليومية (من قاعدة البيانات)")
         search_date = st.date_input("اختر اليوم للتحقق", value=date.today(), key="cal_search_date")
         try:
             all_b = supabase.table("bookings").select("*").execute().data
@@ -538,29 +521,29 @@ elif st.session_state.current_screen == 'bookings':
                         day_bookings.append(b)
 
             if day_bookings:
-                st.success(f"تم العثور على {len(day_bookings)} حجز في هذا التاريخ")
+                st.success(f"✅ تم جلب {len(day_bookings)} حجز لهذا التاريخ من سوبابيز بنجاح")
                 df_day = pd.DataFrame(day_bookings)
                 st.dataframe(df_day, use_container_width=True)
             else:
-                st.info("لا توجد حجوزات مسجلة في هذا اليوم")
+                st.info("ℹ️ يوم فاضي: لا توجد حجوزات مسجلة في هذا اليوم على قاعدة البيانات.")
         except Exception as ex:
-            st.warning(f"تعذر جلب الحجوزات: {ex}")
+            st.warning(f"تعذر جلب الحجوزات من سوبابيز: {ex}")
 
     with tab_list:
-        st.subheader("سجل كافة الحجوزات المسجلة")
+        st.subheader("سجل كافة الحجوزات المسجلة بقاعدة البيانات")
         try:
             res_all = supabase.table("bookings").select("*").execute().data
             if res_all:
                 st.dataframe(pd.DataFrame(res_all), use_container_width=True)
             else:
-                st.info("لا توجد حجوزات سابقة مسجلة في قاعدة البيانات")
+                st.info("لا توجد حجوزات سابقة مسجلة في قاعدة البيانات حتى الآن.")
         except Exception as ex:
             st.error(f"خطأ في جلب السجل: {ex}")
 
-# شاشات الأقسام الأخرى الباقية (Reports, Equip, Expenses, Staff)
+# شاشات الأقسام الأخرى
 elif st.session_state.current_screen == 'reports':
     st.markdown("<h3 style='color: #d4af37; text-align: center;'>التقارير والميزانية</h3>", unsafe_allow_html=True)
-    st.info("قسم التقارير المالية والربحية قيد العرض التفاعلي...")
+    st.info("قسم التقارير المالية والربحية...")
 
 elif st.session_state.current_screen == 'equip':
     st.markdown("<h3 style='color: #d4af37; text-align: center;'>إدارة العهدة والمعدات</h3>", unsafe_allow_html=True)
