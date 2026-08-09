@@ -517,7 +517,6 @@ elif st.session_state.current_screen == 'equip':
 elif st.session_state.current_screen == 'expenses':
     st.markdown("<h3 style='color: #d4af37; text-align: center;'>المصروفات والنفقات</h3>", unsafe_allow_html=True)
     st.info("قسم تسجيل النفقات والمصروفات الإدارية اليومية...")
-
 elif st.session_state.current_screen == 'staff':
     st.markdown("<h3 style='color: #d4af37; text-align: center;'>العمالة والحضور والسُلف</h3>", unsafe_allow_html=True)
     st.info("قسم تتبع الحضور، الانصراف، وسُلف الموظفين...")
